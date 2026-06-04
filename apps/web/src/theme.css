@@ -1,0 +1,15 @@
+:root {
+  --sl-navy: #002368;
+  --sl-navy-dark: #001845;
+  --sl-navy-hover: #1e3a8a;
+  --sl-navy-active: #1e40af;
+  --sl-amber: #f59e0b;
+  --sl-bg: #f3f4f6;
+  --sl-text: #1f2937;
+  --sl-muted: #6b7280;
+  --sl-success: #10b981;
+  --sl-danger: #dc2626;
+  --sl-white: #ffffff;
+  --sl-border: #e5e7eb;
+  --sl-card-shadow: 0 2px 12px rgba(0, 35, 104, 0.08);
+}

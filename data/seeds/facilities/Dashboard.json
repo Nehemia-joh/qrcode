@@ -1,0 +1,12 @@
+{
+  "sheet": "Dashboard",
+  "raw": [
+    ["", "", "Month:", "June", "", "", "", "", "", "", "", "", "", "", "", ""],
+    ["Key Performance Indicator", "Target", "Actual"],
+    ["1. Assets tagged with QR", 0.95, 0.72],
+    ["2. Open maintenance tickets closed on time", 0.9, 0.85],
+    ["3. Safety incidents", 0, 1],
+    ["4. Preventive maintenance compliance", 0.88, 0.9],
+    ["5. Energy cost vs budget", 1, 1.04]
+  ]
+}

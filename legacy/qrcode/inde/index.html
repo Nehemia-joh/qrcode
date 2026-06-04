@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Board & Committee Opportunities - Silverleaf Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        .board-card {
+            transition: all 0.3s ease;
+            border-left: 5px solid;
+        }
+        .board-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(37, 99, 235, 0.3);
+        }
+        .btn-outline {
+            border: 2px solid #3b82f6;
+            color: #3b82f6;
+            transition: all 0.3s ease;
+        }
+        .btn-outline:hover {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .role-tag {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 1px solid #bae6fd;
+        }
+        .value-icon {
+            background: white;
+            border-radius: 12px;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Mobile-specific adjustments */
+        @media (max-width: 640px) {
+            .board-card {
+                padding: 1.5rem !important;
+                margin-bottom: 1.5rem !important;
+            }
+            .text-5xl {
+                font-size: 2.5rem !important;
+            }
+            .text-3xl {
+                font-size: 1.75rem !important;
+            }
+            .text-xl {
+                font-size: 1.125rem !important;
+            }
+            .icon-container {
+                padding: 0.75rem !important;
+                margin-right: 1rem !important;
+            }
+            .btn-primary, .btn-outline {
+                padding-left: 1.5rem !important;
+                padding-right: 1.5rem !important;
+                padding-top: 0.75rem !important;
+                padding-bottom: 0.75rem !important;
+                font-size: 1rem !important;
+                width: 100%;
+                justify-content: center;
+            }
+            .flex-wrap {
+                gap: 0.5rem !important;
+            }
+            .grid-cols-2 {
+                grid-template-columns: 1fr !important;
+            }
+            .value-icon {
+                width: 40px;
+                height: 40px;
+                margin-right: 0.75rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .flex-col {
+                flex-direction: column !important;
+            }
+            .items-start {
+                align-items: flex-start !important;
+            }
+            .text-center-mobile {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 sm:px-6 py-8 sm:py-12 max-w-6xl">
+        <!-- Header -->
+        <div class="text-center mb-8 sm:mb-16 px-2">
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-3 sm:mb-4">Board & Committee Leadership Opportunities</h1>
+            <p class="text-base sm:text-lg md:text-xl text-gray-600 max-w-4xl mx-auto px-2 sm:px-0">
+                Join Silverleaf Academy's leadership team and help shape the future of affordable, high-quality education in Tanzania.
+            </p>
+            <div class="mt-4 sm:mt-8 flex flex-wrap justify-center gap-2 sm:gap-4">
+                <span class="px-3 py-1 sm:px-4 sm:py-2 bg-blue-100 text-blue-700 rounded-full text-sm sm:text-base font-medium">Pro-bono Roles</span>
+                <span class="px-3 py-1 sm:px-4 sm:py-2 bg-green-100 text-green-700 rounded-full text-sm sm:text-base font-medium">Remote & Flexible</span>
+                <span class="px-3 py-1 sm:px-4 sm:py-2 bg-purple-100 text-purple-700 rounded-full text-sm sm:text-base font-medium">Strategic Impact</span>
+            </div>
+        </div>
+
+        <!-- Board Position 1: Fundraising & Investments -->
+        <div class="board-card bg-white rounded-xl sm:rounded-2xl shadow-lg p-6 sm:p-8 md:p-10 mb-6 sm:mb-8 md:mb-10 border-l-blue-500">
+            <div class="flex flex-col lg:flex-row justify-between items-start gap-4 sm:gap-6 md:gap-8">
+                <div class="flex-1 w-full">
+                    <div class="flex flex-col sm:flex-row items-start mb-4 sm:mb-6">
+                        <div class="bg-blue-100 p-3 sm:p-4 rounded-lg sm:rounded-xl mr-4 sm:mr-5 mb-3 sm:mb-0 icon-container">
+                            <i class="fas fa-chart-line text-blue-600 text-2xl sm:text-3xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2">Board Member – Fundraising & Investor Expertise</h2>
+                            <div class="flex flex-wrap items-center gap-2 sm:gap-3 mt-2 sm:mt-3">
+                                <span class="px-2 py-1 sm:px-3 sm:py-1.5 role-tag text-blue-700 rounded-full text-xs sm:text-sm font-semibold">Non-Executive Director</span>
+                                <span class="text-gray-600 text-sm sm:text-base"><i class="fas fa-map-marker-alt mr-1"></i> Remote / Annual meetings</span>
+                                <span class="text-gray-600 text-sm sm:text-base"><i class="fas fa-clock mr-1"></i> Pro-bono</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6 sm:mb-8">
+                        <h3 class="text-lg sm:text-xl font-semibold text-gray-800 mb-2 sm:mb-3">About the Role</h3>
+                        <p class="text-gray-700 text-base sm:text-lg leading-relaxed mb-3 sm:mb-4">
+                            Silverleaf Academy seeks an experienced fundraising or investment leader to serve as a Non-Executive Director. 
+                            Help shape one of East Africa's most promising education ventures and catalyze a national platform for affordable, 
+                            high-quality learning.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                        <div>
+                            <h4 class="font-bold text-gray-800 mb-2 sm:mb-3 flex items-center">
+                                <i class="fas fa-user-check text-blue-500 mr-2 text-sm sm:text-base"></i> Ideal Candidate
+                            </h4>
+                            <ul class="space-y-1 sm:space-y-2 text-gray-700 text-sm sm:text-base">
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-green-500 mt-1 mr-2 text-xs sm:text-sm"></i>
+                                    <span>Strong track record in fundraising or capital raising</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-green-500 mt-1 mr-2 text-xs sm:text-sm"></i>
+                                    <span>Network of funders, investors, or philanthropists</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-green-500 mt-1 mr-2 text-xs sm:text-sm"></i>
+                                    <span>Passion for education equity and social impact</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="mt-4 md:mt-0">
+                            <h4 class="font-bold text-gray-800 mb-2 sm:mb-3 flex items-center">
+                                <i class="fas fa-tasks text-blue-500 mr-2 text-sm sm:text-base"></i> Key Responsibilities
+                            </h4>
+                            <ul class="space-y-1 sm:space-y-2 text-gray-700 text-sm sm:text-base">
+                                <li class="flex items-start">
+                                    <i class="fas fa-bullseye text-blue-500 mt-1 mr-2 text-xs sm:text-sm"></i>
+                                    <span>Advise on fundraising strategy & financial sustainability</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-handshake text-blue-500 mt-1 mr-2 text-xs sm:text-sm"></i>
+                                    <span>Connect Silverleaf with potential funders and partners</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-chart-bar text-blue-500 mt-1 mr-2 text-xs sm:text-sm"></i>
+                                    <span>Elevate visibility in philanthropic & investment circles</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2 sm:gap-3 mb-6 sm:mb-8">
+                        <span class="px-3 py-1 sm:px-4 sm:py-2 bg-blue-50 text-blue-700 rounded text-xs sm:text-sm sm:rounded-lg font-medium">Fundraising Strategy</span>
+                        <span class="px-3 py-1 sm:px-4 sm:py-2 bg-blue-50 text-blue-700 rounded text-xs sm:text-sm sm:rounded-lg font-medium">Investor Relations</span>
+                        <span class="px-3 py-1 sm:px-4 sm:py-2 bg-blue-50 text-blue-700 rounded text-xs sm:text-sm sm:rounded-lg font-medium">Philanthropy</span>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                        <button onclick="window.open('https://www.silverleaf.co.tz/_files/ugd/afe1a9_74692bbefbad4c6ca95e8a0d7d12bbf0.pdf', '_blank')"
+                                class="btn-outline font-semibold py-2 sm:py-3 px-4 sm:px-8 rounded-lg sm:rounded-xl text-sm sm:text-lg inline-flex items-center justify-center">
+                            <i class="fas fa-file-pdf mr-2 sm:mr-3 text-sm sm:text-lg"></i> View Full Details (PDF)
+                        </button>
+                        <button onclick="window.location.href='mailto:krupa@silverleaf.co.tz?subject=Application: Board Member (Fundraising & Investor Engagement)&body=Dear Silverleaf Team,%0D%0A%0D%0AI am applying for the Board Member (Fundraising & Investor Expertise) position.%0D%0A%0D%0AMy relevant experience includes:%0D%0A%0D%0A1.%0D%0A2.%0D%0A3.%0D%0A%0D%0AI have attached my CV for your consideration.%0D%0A%0D%0ABest regards,'"
+                                class="btn-primary text-white font-bold py-2 sm:py-3 px-4 sm:px-8 rounded-lg sm:rounded-xl text-sm sm:text-lg inline-flex items-center justify-center mt-2 sm:mt-0">
+                            <i class="fas fa-paper-plane mr-2 sm:mr-3"></i> Apply Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Board Position 2: Tanzania Business Leadership -->
+        <div class="board-card bg-white rounded-xl sm:rounded-2xl shadow-lg p-6 sm:p-8 md:p-10 mb-6 sm:mb-8 md:mb-10 border-l-green-500">
+            <div class="flex flex-col lg:flex-row justify-between items-start gap-4 sm:gap-6 md:gap-8">
+                <div class="flex-1 w-full">
+                    <div class="flex flex-col sm:flex-row items-start mb-4 sm:mb-6">
+                        <div class="bg-green-100 p-3 sm:p-4 rounded-lg sm:rounded-xl mr-4 sm:mr-5 mb-3 sm:mb-0 icon-container">
+                            <i class="fas fa-briefcase text-green-600 text-2xl sm:text-3xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2">Board Member – Tanzania Business Leadership</h2>
+                            <div class="flex flex-wrap items-center gap-2 sm:gap-3 mt-2 sm:mt-3">
+                                <span class="px-2 py-1 sm:px-3 sm:py-1.5 bg-green-100 text-green-700 rounded-full text-xs sm:text-sm font-semibold">Non-Executive Director</span>
+                                <span class="text-gray-600 text-sm sm:text-base"><i class="fas fa-map-marker-alt mr-1"></i> Remote / Tanzania</span>
+                                <span class="text-gray-600 text-sm sm:text-base"><i class="fas fa-clock mr-1"></i> Pro-bono</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6 sm:mb-8">
+                        <h3 class="text-lg sm:text-xl font-semibold text-gray-800 mb-2 sm:mb-3">About the Role</h3>
+                        <p class="text-gray-700 text-base sm:text-lg leading-relaxed mb-3 sm:mb-4">
+                            We seek an accomplished Tanzanian entrepreneur or senior business executive to serve as a Non-Executive Director. 
+                            This role focuses on navigating Tanzania's regulatory landscape, building strategic partnerships, and engaging 
+                            senior stakeholders across government and private sectors.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                        <div>
+                            <h4 class="font-bold text-gray-800 mb-2 sm:mb-3 flex items-center">
+                                <i class="fas fa-user-check text-green-500 mr-2 text-sm sm:text-base"></i> Ideal Candidate
+                            </h4>
+                            <ul class="space-y-1 sm:space-y-2 text-gray-700 text-sm sm:text-base">
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-green-500 mt-1 mr-2 text-xs sm:text-sm"></i>
+                                    <span>Strong public profile in Tanzanian business circles</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-green-500 mt-1 mr-2 text-xs sm:text-sm"></i>
+                                    <span>Experience leading/scaling businesses in Tanzania</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-green-500 mt-1 mr-2 text-xs sm:text-sm"></i>
+                                    <span>Deep understanding of local regulatory context</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="mt-4 md:mt-0">
+                            <h4 class="font-bold text-gray-800 mb-2 sm:mb-3 flex items-center">
+                                <i class="fas fa-tasks text-green-500 mr-2 text-sm sm:text-base"></i> Key Responsibilities
+                            </h4>
+                            <ul class="space-y-1 sm:space-y-2 text-gray-700 text-sm sm:text-base">
+                                <li class="flex items-start">
+                                    <i class="fas fa-bullseye text-green-500 mt-1 mr-2 text-xs sm:text-sm"></i>
+                                    <span>Advise on national growth strategy and sustainability</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-handshake text-green-500 mt-1 mr-2 text-xs sm:text-sm"></i>
+                                    <span>Navigate regulatory processes & public-private collaboration</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-network-wired text-green-500 mt-1 mr-2 text-xs sm:text-sm"></i>
+                                    <span>Connect Silverleaf with government & corporate leaders</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2 sm:gap-3 mb-6 sm:mb-8">
+                        <span class="px-3 py-1 sm:px-4 sm:py-2 bg-green-50 text-green-700 rounded text-xs sm:text-sm sm:rounded-lg font-medium">Tanzania Business</span>
+                        <span class="px-3 py-1 sm:px-4 sm:py-2 bg-green-50 text-green-700 rounded text-xs sm:text-sm sm:rounded-lg font-medium">Government Relations</span>
+                        <span class="px-3 py-1 sm:px-4 sm:py-2 bg-green-50 text-green-700 rounded text-xs sm:text-sm sm:rounded-lg font-medium">Strategic Partnerships</span>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                        <button onclick="window.open('https://www.silverleaf.co.tz/_files/ugd/afe1a9_c4c2f01a1630456ca0985b69151a8a37.pdf', '_blank')"
+                                class="btn-outline font-semibold py-2 sm:py-3 px-4 sm:px-8 rounded-lg sm:rounded-xl text-sm sm:text-lg inline-flex items-center justify-center">
+                            <i class="fas fa-file-pdf mr-2 sm:mr-3 text-sm sm:text-lg"></i> View Full Details (PDF)
+                        </button>
+                        <button onclick="window.location.href='mailto:krupa@silverleaf.co.tz?subject=Application: Board Member (Tanzania Business Leadership)&body=Dear Silverleaf Team,%0D%0A%0D%0AI am applying for the Board Member (Tanzania Business Leadership) position.%0D%0A%0D%0AMy relevant experience includes:%0D%0A%0D%0A1.%0D%0A2.%0D%0A3.%0D%0A%0D%0AI have attached my CV for your consideration.%0D%0A%0D%0ABest regards,'"
+                                class="btn-primary text-white font-bold py-2 sm:py-3 px-4 sm:px-8 rounded-lg sm:rounded-xl text-sm sm:text-lg inline-flex items-center justify-center mt-2 sm:mt-0">
+                            <i class="fas fa-paper-plane mr-2 sm:mr-3"></i> Apply Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Board Position 3: Education Strategy & Operations -->
+        <div class="board-card bg-white rounded-xl sm:rounded-2xl shadow-lg p-6 sm:p-8 md:p-10 border-l-purple-500">
+            <div class="flex flex-col lg:flex-row justify-between items-start gap-4 sm:gap-6 md:gap-8">
+                <div class="flex-1 w-full">
+                    <div class="flex flex-col sm:flex-row items-start mb-4 sm:mb-6">
+                        <div class="bg-purple-100 p-3 sm:p-4 rounded-lg sm:rounded-xl mr-4 sm:mr-5 mb-3 sm:mb-0 icon-container">
+                            <i class="fas fa-graduation-cap text-purple-600 text-2xl sm:text-3xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2">Board Member – Education Strategy & Operations</h2>
+                            <div class="flex flex-wrap items-center gap-2 sm:gap-3 mt-2 sm:mt-3">
+                                <span class="px-2 py-1 sm:px-3 sm:py-1.5 bg-purple-100 text-purple-700 rounded-full text-xs sm:text-sm font-semibold">Non-Executive Director</span>
+                                <span class="text-gray-600 text-sm sm:text-base"><i class="fas fa-map-marker-alt mr-1"></i> Remote / Quarterly</span>
+                                <span class="text-gray-600 text-sm sm:text-base"><i class="fas fa-clock mr-1"></i> Voluntary (Unpaid)</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6 sm:mb-8">
+                        <h3 class="text-lg sm:text-xl font-semibold text-gray-800 mb-2 sm:mb-3">About the Role</h3>
+                        <p class="text-gray-700 text-base sm:text-lg leading-relaxed mb-3 sm:mb-4">
+                            We're seeking an experienced education entrepreneur or senior operator to advise on academic quality, 
+                            operational management, and sustainable growth. This role is perfect for someone who has built or scaled 
+                            private schools or education ventures, ideally in emerging markets.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                        <div>
+                            <h4 class="font-bold text-gray-800 mb-2 sm:mb-3 flex items-center">
+                                <i class="fas fa-user-check text-purple-500 mr-2 text-sm sm:text-base"></i> Ideal Candidate
+                            </h4>
+                            <ul class="space-y-1 sm:space-y-2 text-gray-700 text-sm sm:text-base">
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-green-500 mt-1 mr-2 text-xs sm:text-sm"></i>
+                                    <span>Experience founding/scaling private school networks</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-green-500 mt-1 mr-2 text-xs sm:text-sm"></i>
+                                    <span>Deep insight into academic strategy & teacher development</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-green-500 mt-1 mr-2 text-xs sm:text-sm"></i>
+                                    <span>Understanding of operational & financial complexities</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="mt-4 md:mt-0">
+                            <h4 class="font-bold text-gray-800 mb-2 sm:mb-3 flex items-center">
+                                <i class="fas fa-tasks text-purple-500 mr-2 text-sm sm:text-base"></i> Key Responsibilities
+                            </h4>
+                            <ul class="space-y-1 sm:space-y-2 text-gray-700 text-sm sm:text-base">
+                                <li class="flex items-start">
+                                    <i class="fas fa-bullseye text-purple-500 mt-1 mr-2 text-xs sm:text-sm"></i>
+                                    <span>Advise on education models & school growth plans</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-cogs text-purple-500 mt-1 mr-2 text-xs sm:text-sm"></i>
+                                    <span>Guide academic quality & curriculum innovation</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-network-wired text-purple-500 mt-1 mr-2 text-xs sm:text-sm"></i>
+                                    <span>Connect with global education leaders & knowledge partners</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2 sm:gap-3 mb-6 sm:mb-8">
+                        <span class="px-3 py-1 sm:px-4 sm:py-2 bg-purple-50 text-purple-700 rounded text-xs sm:text-sm sm:rounded-lg font-medium">Education Strategy</span>
+                        <span class="px-3 py-1 sm:px-4 sm:py-2 bg-purple-50 text-purple-700 rounded text-xs sm:text-sm sm:rounded-lg font-medium">School Operations</span>
+                        <span class="px-3 py-1 sm:px-4 sm:py-2 bg-purple-50 text-purple-700 rounded text-xs sm:text-sm sm:rounded-lg font-medium">Academic Quality</span>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                        <button onclick="window.open('https://www.silverleaf.co.tz/_files/ugd/afe1a9_3ecdd2da5749457fb6a37537bf4d3548.pdf', '_blank')"
+                                class="btn-outline font-semibold py-2 sm:py-3 px-4 sm:px-8 rounded-lg sm:rounded-xl text-sm sm:text-lg inline-flex items-center justify-center">
+                            <i class="fas fa-file-pdf mr-2 sm:mr-3 text-sm sm:text-lg"></i> View Full Details (PDF)
+                        </button>
+                        <button onclick="window.location.href='mailto:krupa@silverleaf.co.tz?subject=Application: Board Member (Education Strategy & Operations)&body=Dear Silverleaf Team,%0D%0A%0D%0AI am applying for the Board Member (Education Strategy & Operations) position.%0D%0A%0D%0AMy relevant experience includes:%0D%0A%0D%0A1.%0D%0A2.%0D%0A3.%0D%0A%0D%0AI have attached my CV for your consideration.%0D%0A%0D%0ABest regards,'"
+                                class="btn-primary text-white font-bold py-2 sm:py-3 px-4 sm:px-8 rounded-lg sm:rounded-xl text-sm sm:text-lg inline-flex items-center justify-center mt-2 sm:mt-0">
+                            <i class="fas fa-paper-plane mr-2 sm:mr-3"></i> Apply Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Updated Values & Commitment Section -->
+        <div class="mt-8 sm:mt-12 md:mt-16 p-6 sm:p-8 md:p-10 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl sm:rounded-2xl border border-blue-100">
+            <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">Our Core Values at Silverleaf Academy</h2>
+            
+            <div class="space-y-6 sm:space-y-8">
+                <!-- Value 1: Lead the Way -->
+                <div class="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm">
+                    <div class="flex items-start">
+                        <div class="value-icon mr-4">
+                            <i class="fas fa-flag text-blue-500 text-xl sm:text-2xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">Lead the Way</h3>
+                            <p class="text-gray-600 text-sm sm:text-base">
+                                We embody the spirit of servant leadership by consistently practicing empathy, prioritizing the needs of others and setting a powerful example through your actions. We inspire those around us by uplifting our peers, modeling integrity and creating a culture where everyone is encouraged to reach their full potential.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Value 2: Speak, Listen and Learn -->
+                <div class="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm">
+                    <div class="flex items-start">
+                        <div class="value-icon mr-4">
+                            <i class="fas fa-comments text-green-500 text-xl sm:text-2xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">Speak, Listen and Learn</h3>
+                            <p class="text-gray-600 text-sm sm:text-base">
+                                We foster a culture of open, respectful and thoughtful communication. We work together by expressing our ideas clearly, listening actively to others and embracing diverse perspectives. Through meaningful dialogue and a willingness to learn from one another, we continuously grow as individuals and as a community.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Value 3: Unwavering Mission Focus -->
+                <div class="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm">
+                    <div class="flex items-start">
+                        <div class="value-icon mr-4">
+                            <i class="fas fa-bullseye text-red-500 text-xl sm:text-2xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">Unwavering Mission Focus</h3>
+                            <p class="text-gray-600 text-sm sm:text-base">
+                                We set ambitious goals and pursue them with discipline, determination and resilience. We hold ourselves and each other to the highest standards, never losing sight of our purpose—even in the face of obstacles. Our commitment to excellence and our mission drives us to achieve greatness together.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Value 4: Ask Why, Why Not -->
+                <div class="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm">
+                    <div class="flex items-start">
+                        <div class="value-icon mr-4">
+                            <i class="fas fa-question-circle text-purple-500 text-xl sm:text-2xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">Ask Why, Why Not</h3>
+                            <p class="text-gray-600 text-sm sm:text-base">
+                                We think critically, question assumptions and seek evidence in every decision we make. We are proactive and innovative, always exploring what is possible and finding creative solutions that drive positive change. We believe curiosity and courage are the keys to unlocking new opportunities for our students and ourselves.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Value 5: Family -->
+                <div class="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm">
+                    <div class="flex items-start">
+                        <div class="value-icon mr-4">
+                            <i class="fas fa-heart text-pink-500 text-xl sm:text-2xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">Family</h3>
+                            <p class="text-gray-600 text-sm sm:text-base">
+                                We build a community where every individual feels a genuine sense of belonging, care and support. We treat each other with respect and kindness, celebrate our achievements together, and stand united through challenges. Like a true family, we nurture trust and connection, ensuring everyone feels valued, seen and safe.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Value 6: Fun (Love) -->
+                <div class="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm">
+                    <div class="flex items-start">
+                        <div class="value-icon mr-4">
+                            <i class="fas fa-laugh-beam text-yellow-500 text-xl sm:text-2xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">Fun (Love)</h3>
+                            <p class="text-gray-600 text-sm sm:text-base">
+                                We infuse our school with joy, positivity and heartfelt connection. We believe that learning and working should be enjoyable and that laughter, creativity and genuine acts of kindness make our environment vibrant and motivating.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Value 7: Faith -->
+                <div class="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-sm">
+                    <div class="flex items-start">
+                        <div class="value-icon mr-4">
+                            <i class="fas fa-hands-praying text-indigo-500 text-xl sm:text-2xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">Faith</h3>
+                            <p class="text-gray-600 text-sm sm:text-base">
+                                At Silverleaf Academy, "Faith" is about nurturing trust, wellness, and conscious awareness in ourselves and our community. We believe in our shared mission and in each other's potential. Faith means being mindful and present, supporting each other's mental, emotional, and spiritual wellbeing, and persevering with optimism and resilience. Through self-awareness and collective belief, we strive to create a supportive and inclusive environment for all.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

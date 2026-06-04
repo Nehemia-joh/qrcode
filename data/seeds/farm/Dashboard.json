@@ -1,0 +1,12 @@
+{
+  "sheet": "Dashboard",
+  "raw": [
+    ["", "", "Month:", "June", "", "", "", "", "", "", "", "", "", "", "", ""],
+    ["Key Performance Indicator", "Target", "Actual"],
+    ["1. Yield vs target (kg)", 12000, 11500],
+    ["2. Input cost per kg (TZS)", 450, 465],
+    ["3. Labour hours per hectare", 120, 118],
+    ["4. Crop loss rate", 0.04, 0.05],
+    ["5. Sales to kitchen (TZS)", 8500000, 8200000]
+  ]
+}

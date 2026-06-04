@@ -1,0 +1,950 @@
+<?php
+/**
+ * Attendance API - Record and fetch attendance
+ * Endpoint: /api/index.php?endpoint=attendance
+ * Methods: GET, POST, PUT
+ */
+
+require_once 'index.php';
+
+$db = getDB();
+$method = $_SERVER['REQUEST_METHOD'];
+
+switch ($method) {
+    case 'GET':
+        // Get attendance records
+        if (isset($_GET['student_id'])) {
+            // Get attendance for specific student
+            $stmt = $db->prepare("
+                SELECT a.*, s.full_name, s.student_id, s.grade_class
+                FROM attendance_records a
+                JOIN students s ON a.student_id = s.id
+                WHERE s.student_id = ?
+                ORDER BY a.attendance_time DESC
+                LIMIT 50
+            ");
+            $stmt->bind_param('s', $_GET['student_id']);
+        }
+        elseif (isset($_GET['date'])) {
+            // Get attendance by date
+            $stmt = $db->prepare("
+                SELECT a.*, s.full_name, s.student_id, s.grade_class, s.bus_number
+                FROM attendance_records a
+                JOIN students s ON a.student_id = s.id
+                                WHERE DATE(a.attendance_date) = ?
+                ORDER BY a.attendance_time DESC
+            ");
+            $stmt->bind_param('s', $_GET['date']);
+        }
+        elseif (isset($_GET['bus_number']) && isset($_GET['date'])) {
+            // Get attendance by bus and date
+            $stmt = $db->prepare("
+                SELECT a.*, s.full_name, s.student_id, s.grade_class
+                FROM attendance_records a
+                JOIN students s ON a.student_id = s.id
+                WHERE s.bus_number = ? AND DATE(a.attendance_date) = ?
+                ORDER BY a.attendance_time
+            ");
+            $stmt->bind_param('ss', $_GET['bus_number'], $_GET['date']);
+        }
+        elseif (isset($_GET['recent'])) {
+            // Get recent attendance
+            $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 50;
+            $stmt = $db->prepare("
+                SELECT a.*, s.full_name, s.student_id, s.grade_class, s.bus_number
+                FROM attendance_records a
+                JOIN students s ON a.student_id = s.id
+                ORDER BY a.attendance_time DESC
+                LIMIT ?
+            ");
+            $stmt->bind_param('i', $limit);
+        }
+        else {
+            // Default: get today's attendance
+            $stmt = $db->prepare("
+                SELECT a.*, s.full_name, s.student_id, s.grade_class, s.bus_number
+                FROM attendance_records a
+                JOIN students s ON a.student_id = s.id
+                WHERE DATE(a.attendance_date) = CURDATE()
+                ORDER BY a.attendance_time DESC
+            ");
+        }
+        
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $attendance = $result->fetch_all(MYSQLI_ASSOC);
+        
+        echo json_encode([
+            'success' => true,
+            'data' => $attendance,
+            'count' => count($attendance),
+            'date' => date('Y-m-d')
+        ]);
+        break;
+        
+    case 'POST':
+        // Record single attendance
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        if (!$input) {
+            echo json_encode(['success' => false, 'message' => 'Invalid JSON data']);
+            exit;
+        }
+        
+        // Validate required fields
+        $required = ['student_id', 'attendance_type', 'bus_number'];
+        foreach ($required as $field) {
+            if (!isset($input[$field]) || empty($input[$field])) {
+                echo json_encode(['success' => false, 'message' => "Missing field: $field"]);
+                exit;
+            }
+        }
+        
+        // Get student database ID
+        $studentStmt = $db->prepare("SELECT id FROM students WHERE student_id = ?");
+        $studentStmt->bind_param('s', $input['student_id']);
+        $studentStmt->execute();
+        $studentResult = $studentStmt->get_result();
+        $student = $studentResult->fetch_assoc();
+        
+        if (!$student) {
+            echo json_encode(['success' => false, 'message' => 'Student not found']);
+            exit;
+        }
+        
+        // Insert attendance record
+        $stmt = $db->prepare("
+            INSERT INTO attendance_records (
+                student_id, qr_code, bus_number, route_number, attendance_type,
+                attendance_time, attendance_date, latitude, longitude, 
+                device_id, sync_status, recorded_by
+            ) VALUES (?, ?, ?, ?, ?, NOW(), CURDATE(), ?, ?, ?, 'synced', ?)
+        ");
+        
+        $qr_code = $input['qr_code'] ?? $input['student_id'] . '_QR';
+        $route_number = $input['route_number'] ?? '';
+        $latitude = $input['latitude'] ?? null;
+        $longitude = $input['longitude'] ?? null;
+        $device_id = $input['device_id'] ?? 'mobile_app';
+        $recorded_by = $input['recorded_by'] ?? 'mobile';
+        
+        $stmt->bind_param(
+            'issssddss',
+            $student['id'],
+            $qr_code,
+            $input['bus_number'],
+            $route_number,
+            $input['attendance_type'],
+            $latitude,
+            $longitude,
+            $device_id,
+            $recorded_by
+        );
+        
+        if ($stmt->execute()) {
+            // Update QR code usage if QR was scanned
+            if (isset($input['qr_code'])) {
+                $updateStmt = $db->prepare("
+                    UPDATE student_qr_codes 
+                    SET last_used = NOW(), usage_count = usage_count + 1 
+                    WHERE qr_code = ?
+                ");
+                $updateStmt->bind_param('s', $input['qr_code']);
+                $updateStmt->execute();
+            }
+            
+            echo json_encode([
+                'success' => true,
+                'message' => 'Attendance recorded successfully',
+                'record_id' => $db->insert_id,
+                'timestamp' => date('Y-m-d H:i:s')
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Failed to record attendance: ' . $db->error]);
+        }
+        break;
+        
+    case 'PUT':
+        // Update attendance record (e.g., mark as invalid)
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        if (!isset($input['record_id'])) {
+            echo json_encode(['success' => false, 'message' => 'Record ID required']);
+            exit;
+        }
+        
+        $stmt = $db->prepare("
+            UPDATE attendance_records 
+            SET status = ?, sync_status = 'updated'
+            WHERE id = ?
+        ");
+        $status = $input['status'] ?? 'invalid';
+        $stmt->bind_param('si', $status, $input['record_id']);
+        
+        if ($stmt->execute()) {
+            echo json_encode(['success' => true, 'message' => 'Attendance updated']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Update failed']);
+        }
+        break;
+        
+    default:
+        echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+        break;
+}
+
+
+
+<?php
+/**
+ * Buses API - Get bus and route information
+ * Endpoint: /api/index.php?endpoint=buses
+ * Methods: GET
+ */
+
+require_once 'index.php';
+
+$db = getDB();
+$method = $_SERVER['REQUEST_METHOD'];
+
+if ($method !== 'GET') {
+    echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+    exit;
+}
+
+if (isset($_GET['id'])) {
+    // Get single bus
+    $stmt = $db->prepare("
+        SELECT * FROM bus_routes 
+        WHERE id = ? AND status = 'active'
+    ");
+    $stmt->bind_param('i', $_GET['id']);
+} 
+elseif (isset($_GET['bus_number'])) {
+    // Get bus by number
+    $stmt = $db->prepare("
+        SELECT * FROM bus_routes 
+        WHERE bus_number = ? AND status = 'active'
+    ");
+    $stmt->bind_param('s', $_GET['bus_number']);
+}
+elseif (isset($_GET['route_number'])) {
+    // Get bus by route number
+    $stmt = $db->prepare("
+        SELECT * FROM bus_routes 
+        WHERE route_number = ? AND status = 'active'
+    ");
+    $stmt->bind_param('s', $_GET['route_number']);
+}
+else {
+    // Get all active buses
+    $stmt = $db->prepare("
+        SELECT * FROM bus_routes 
+        WHERE status = 'active' 
+        ORDER BY route_name
+    ");
+}
+
+$stmt->execute();
+$result = $stmt->get_result();
+$buses = $result->fetch_all(MYSQLI_ASSOC);
+
+// Get student count for each bus
+foreach ($buses as &$bus) {
+    $countStmt = $db->prepare("
+        SELECT COUNT(*) as count 
+        FROM students 
+        WHERE bus_route_id = ? AND status = 'active'
+    ");
+    $countStmt->bind_param('i', $bus['id']);
+    $countStmt->execute();
+    $countResult = $countStmt->get_result();
+    $count = $countResult->fetch_assoc();
+    $bus['assigned_students'] = $count['count'];
+    $bus['available_seats'] = $bus['capacity'] - $count['count'];
+}
+
+echo json_encode([
+    'success' => true,
+    'data' => $buses,
+    'count' => count($buses)
+]);
+
+
+
+<?php
+/**
+ * School Bus Tracking System - Main API Router
+ * Mobile-friendly API endpoints without authentication
+ */
+
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+
+// Handle preflight requests
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+// Database configuration
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'school_bus_tracking');
+define('DB_USER', 'root');
+define('DB_PASS', 'chance00');
+
+// API base path
+define('API_BASE', '/school_bus_tracking/api/');
+
+// Get request method and endpoint
+$method = $_SERVER['REQUEST_METHOD'];
+$endpoint = isset($_GET['endpoint']) ? $_GET['endpoint'] : '';
+
+// Route to appropriate handler
+switch ($endpoint) {
+    case 'students':
+        require_once 'students.php';
+        break;
+    case 'attendance':
+        require_once 'attendance.php';
+        break;
+    case 'buses':
+        require_once 'buses.php';
+        break;
+    case 'routes':
+        require_once 'routes.php';
+        break;
+    case 'sync':
+        require_once 'sync.php';
+        break;
+    case 'qr':
+        require_once 'qr.php';
+        break;
+    case 'stats':
+        require_once 'stats.php';
+        break;
+    default:
+        echo json_encode([
+            'success' => true,
+            'message' => 'School Bus Tracking API',
+            'version' => '1.0',
+            'endpoints' => [
+                '/api/index.php?endpoint=students',
+                '/api/index.php?endpoint=attendance',
+                '/api/index.php?endpoint=buses',
+                '/api/index.php?endpoint=routes',
+                '/api/index.php?endpoint=sync',
+                '/api/index.php?endpoint=qr',
+                '/api/index.php?endpoint=stats'
+            ],
+            'documentation' => 'Use GET for fetching data, POST for creating records'
+        ]);
+        break;
+}
+
+function getDB() {
+    static $conn = null;
+    if ($conn === null) {
+        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+        if ($conn->connect_error) {
+            http_response_code(500);
+            die(json_encode(['success' => false, 'message' => 'Database connection failed']));
+        }
+        $conn->set_charset('utf8mb4');
+    }
+    return $conn;
+}
+
+
+<?php
+/**
+ * QR Code API - Validate QR codes and get student info
+ * Endpoint: /api/index.php?endpoint=qr
+ * Methods: GET, POST
+ */
+
+require_once 'index.php';
+
+$db = getDB();
+$method = $_SERVER['REQUEST_METHOD'];
+
+switch ($method) {
+    case 'GET':
+        if (!isset($_GET['code'])) {
+            echo json_encode(['success' => false, 'message' => 'QR code required']);
+            exit;
+        }
+        
+        // Get student by QR code
+        $stmt = $db->prepare("
+            SELECT 
+                s.id, s.student_id, s.full_name, s.grade_class, s.section,
+                s.bus_number, s.morning_pickup, s.evening_drop,
+                sq.qr_code, sq.usage_count, sq.last_used,
+                b.route_name, b.route_number
+            FROM student_qr_codes sq
+            JOIN students s ON sq.student_id = s.id
+            LEFT JOIN bus_routes b ON s.bus_route_id = b.id
+            WHERE sq.qr_code = ? AND sq.is_active = 1 AND s.status = 'active'
+        ");
+        $stmt->bind_param('s', $_GET['code']);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $student = $result->fetch_assoc();
+        
+        if ($student) {
+            echo json_encode([
+                'success' => true,
+                'valid' => true,
+                'data' => $student,
+                'message' => 'Valid QR code'
+            ]);
+        } else {
+            echo json_encode([
+                'success' => true,
+                'valid' => false,
+                'message' => 'Invalid or inactive QR code'
+            ]);
+        }
+        break;
+        
+    case 'POST':
+        // Validate multiple QR codes
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        if (!isset($input['codes']) || !is_array($input['codes'])) {
+            echo json_encode(['success' => false, 'message' => 'Array of QR codes required']);
+            exit;
+        }
+        
+        $codes = $input['codes'];
+        $placeholders = implode(',', array_fill(0, count($codes), '?'));
+        $types = str_repeat('s', count($codes));
+        
+        $query = "
+            SELECT 
+                sq.qr_code,
+                s.student_id, s.full_name, s.grade_class, s.bus_number,
+                sq.is_active, sq.usage_count
+            FROM student_qr_codes sq
+            JOIN students s ON sq.student_id = s.id
+            WHERE sq.qr_code IN ($placeholders)
+        ";
+        
+        $stmt = $db->prepare($query);
+        $stmt->bind_param($types, ...$codes);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $validCodes = $result->fetch_all(MYSQLI_ASSOC);
+        
+        // Create lookup array
+        $validLookup = [];
+        foreach ($validCodes as $valid) {
+            $validLookup[$valid['qr_code']] = $valid;
+        }
+        
+        // Check each requested code
+        $results = [];
+        foreach ($codes as $code) {
+            if (isset($validLookup[$code])) {
+                $results[] = [
+                    'qr_code' => $code,
+                    'valid' => $validLookup[$code]['is_active'] == 1,
+                    'student' => $validLookup[$code]
+                ];
+            } else {
+                $results[] = [
+                    'qr_code' => $code,
+                    'valid' => false,
+                    'student' => null
+                ];
+            }
+        }
+        
+        echo json_encode([
+            'success' => true,
+            'results' => $results
+        ]);
+        break;
+        
+    default:
+        echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+        break;
+}
+
+
+<?php
+/**
+ * Routes API - Get route information with stops
+ * Endpoint: /api/index.php?endpoint=routes
+ * Methods: GET
+ */
+
+require_once 'index.php';
+
+$db = getDB();
+$method = $_SERVER['REQUEST_METHOD'];
+
+if ($method !== 'GET') {
+    echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+    exit;
+}
+
+// Get all routes with student counts
+$query = "
+    SELECT 
+        b.*,
+        COUNT(s.id) as total_students,
+        SUM(CASE WHEN s.morning_pickup = 1 THEN 1 ELSE 0 END) as morning_students,
+        SUM(CASE WHEN s.evening_drop = 1 THEN 1 ELSE 0 END) as evening_students
+    FROM bus_routes b
+    LEFT JOIN students s ON b.id = s.bus_route_id AND s.status = 'active'
+    WHERE b.status = 'active'
+    GROUP BY b.id
+    ORDER BY b.route_name
+";
+
+$result = $db->query($query);
+$routes = $result->fetch_all(MYSQLI_ASSOC);
+
+// For each route, get student list if requested
+if (isset($_GET['include_students']) && $_GET['include_students'] == 1) {
+    foreach ($routes as &$route) {
+        $studentStmt = $db->prepare("
+            SELECT id, student_id, full_name, grade_class, section, 
+                   morning_pickup, evening_drop, address, phone
+            FROM students
+            WHERE bus_route_id = ? AND status = 'active'
+            ORDER BY full_name
+        ");
+        $studentStmt->bind_param('i', $route['id']);
+        $studentStmt->execute();
+        $studentResult = $studentStmt->get_result();
+        $route['students'] = $studentResult->fetch_all(MYSQLI_ASSOC);
+    }
+}
+
+echo json_encode([
+    'success' => true,
+    'data' => $routes,
+    'count' => count($routes)
+]);
+
+
+
+<?php
+/**
+ * Statistics API - Get dashboard statistics
+ * Endpoint: /api/index.php?endpoint=stats
+ * Methods: GET
+ */
+
+require_once 'index.php';
+
+$db = getDB();
+$method = $_SERVER['REQUEST_METHOD'];
+
+if ($method !== 'GET') {
+    echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+    exit;
+}
+
+// Get date range
+$date = isset($_GET['date']) ? $_GET['date'] : date('Y-m-d');
+
+// Basic stats
+$stats = [];
+
+// Total students
+$result = $db->query("SELECT COUNT(*) as count FROM students WHERE status = 'active'");
+$stats['total_students'] = $result->fetch_assoc()['count'];
+
+// Total buses
+$result = $db->query("SELECT COUNT(*) as count FROM bus_routes WHERE status = 'active'");
+$stats['total_buses'] = $result->fetch_assoc()['count'];
+
+// Today's attendance
+$stmt = $db->prepare("
+    SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN attendance_type LIKE '%morning%' THEN 1 ELSE 0 END) as morning,
+        SUM(CASE WHEN attendance_type LIKE '%evening%' THEN 1 ELSE 0 END) as evening,
+        COUNT(DISTINCT student_id) as unique_students
+    FROM attendance_records 
+    WHERE DATE(attendance_date) = ?
+");
+$stmt->bind_param('s', $date);
+$stmt->execute();
+$attendanceStats = $stmt->get_result()->fetch_assoc();
+$stats['today_attendance'] = $attendanceStats;
+
+// Bus occupancy
+$busStats = $db->query("
+    SELECT 
+        b.id, b.bus_number, b.route_name, b.capacity,
+        COUNT(s.id) as current_students
+    FROM bus_routes b
+    LEFT JOIN students s ON b.id = s.bus_route_id AND s.status = 'active'
+    WHERE b.status = 'active'
+    GROUP BY b.id
+");
+$stats['bus_occupancy'] = $busStats->fetch_all(MYSQLI_ASSOC);
+
+// Payment summary
+$paymentStats = $db->query("
+    SELECT 
+        payment_status,
+        COUNT(*) as count,
+        SUM(total_amount) as total_amount,
+        SUM(amount_paid) as amount_paid
+    FROM students
+    WHERE status = 'active'
+    GROUP BY payment_status
+");
+$stats['payment_summary'] = $paymentStats->fetch_all(MYSQLI_ASSOC);
+
+// Recent activity
+$recentStmt = $db->prepare("
+    SELECT 
+        a.*, s.full_name, s.student_id
+    FROM attendance_records a
+    JOIN students s ON a.student_id = s.id
+    ORDER BY a.attendance_time DESC
+    LIMIT 20
+");
+$recentStmt->execute();
+$stats['recent_activity'] = $recentStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+echo json_encode([
+    'success' => true,
+    'date' => $date,
+    'stats' => $stats,
+    'timestamp' => date('Y-m-d H:i:s')
+]);
+
+
+
+<?php
+/**
+ * Students API - Get student information
+ * Endpoint: /api/index.php?endpoint=students
+ * Methods: GET, POST
+ */
+
+require_once 'index.php';
+
+$db = getDB();
+$method = $_SERVER['REQUEST_METHOD'];
+
+switch ($method) {
+    case 'GET':
+        // Get all students or single student
+        if (isset($_GET['id'])) {
+            // Get single student by ID
+            $stmt = $db->prepare("
+                SELECT s.*, b.route_name, b.bus_number as route_bus_number,
+                       sq.qr_image_path, sq.qr_code, sq.usage_count
+                FROM students s
+                LEFT JOIN bus_routes b ON s.bus_route_id = b.id
+                LEFT JOIN student_qr_codes sq ON s.id = sq.student_id AND sq.is_active = 1
+                WHERE s.id = ?
+            ");
+            $stmt->bind_param('i', $_GET['id']);
+        } 
+        elseif (isset($_GET['student_id'])) {
+            // Get student by student_id (e.g., STU2024001)
+            $stmt = $db->prepare("
+                SELECT s.*, b.route_name, b.bus_number as route_bus_number,
+                       sq.qr_image_path, sq.qr_code, sq.usage_count
+                FROM students s
+                LEFT JOIN bus_routes b ON s.bus_route_id = b.id
+                LEFT JOIN student_qr_codes sq ON s.id = sq.student_id AND sq.is_active = 1
+                WHERE s.student_id = ?
+            ");
+            $stmt->bind_param('s', $_GET['student_id']);
+        }
+        elseif (isset($_GET['qr_code'])) {
+            // Get student by QR code
+            $stmt = $db->prepare("
+                SELECT s.*, b.route_name, b.bus_number as route_bus_number,
+                       sq.qr_image_path, sq.qr_code, sq.usage_count
+                FROM students s
+                LEFT JOIN bus_routes b ON s.bus_route_id = b.id
+                LEFT JOIN student_qr_codes sq ON s.id = sq.student_id
+                WHERE sq.qr_code = ? AND sq.is_active = 1
+            ");
+            $stmt->bind_param('s', $_GET['qr_code']);
+        }
+        elseif (isset($_GET['bus_number'])) {
+            // Get students by bus number
+            $stmt = $db->prepare("
+                SELECT s.*, b.route_name, sq.qr_image_path
+                FROM students s
+                LEFT JOIN bus_routes b ON s.bus_route_id = b.id
+                LEFT JOIN student_qr_codes sq ON s.id = sq.student_id AND sq.is_active = 1
+                WHERE s.bus_number = ? AND s.status = 'active'
+                ORDER BY s.full_name
+            ");
+            $stmt->bind_param('s', $_GET['bus_number']);
+        }
+        else {
+            // Get all active students with pagination
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 100;
+            $offset = ($page - 1) * $limit;
+            
+            $stmt = $db->prepare("
+                SELECT s.*, b.route_name, b.bus_number as route_bus_number,
+                       sq.qr_image_path, sq.qr_code
+                FROM students s
+                LEFT JOIN bus_routes b ON s.bus_route_id = b.id
+                LEFT JOIN student_qr_codes sq ON s.id = sq.student_id AND sq.is_active = 1
+                WHERE s.status = 'active'
+                ORDER BY s.full_name
+                LIMIT ? OFFSET ?
+            ");
+            $stmt->bind_param('ii', $limit, $offset);
+        }
+        
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $students = $result->fetch_all(MYSQLI_ASSOC);
+        
+        // Get total count for pagination
+        $countResult = $db->query("SELECT COUNT(*) as total FROM students WHERE status = 'active'");
+        $total = $countResult->fetch_assoc()['total'];
+        
+        echo json_encode([
+            'success' => true,
+            'data' => $students,
+            'total' => $total,
+            'page' => isset($page) ? $page : 1,
+            'limit' => isset($limit) ? $limit : count($students),
+            'timestamp' => date('Y-m-d H:i:s')
+        ]);
+        break;
+        
+    case 'POST':
+        // Add new student via API
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        if (!$input) {
+            echo json_encode(['success' => false, 'message' => 'Invalid JSON data']);
+            exit;
+        }
+        
+        // Generate student ID
+        $year = date('Y');
+        $random = strtoupper(substr(uniqid(), -6));
+        $student_id = 'STU' . $year . $random;
+        
+        // Insert student
+        $stmt = $db->prepare("
+            INSERT INTO students (
+                student_id, full_name, grade_class, section, father_name, 
+                mother_name, date_of_birth, gender, phone, address,
+                bus_route_id, bus_number, morning_pickup, evening_drop,
+                amount_paid, total_amount, payment_status, registration_date
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+        
+        $morning_pickup = isset($input['morning_pickup']) ? 1 : 0;
+        $evening_drop = isset($input['evening_drop']) ? 1 : 0;
+        $amount_paid = floatval($input['amount_paid'] ?? 0);
+        $total_amount = floatval($input['total_amount'] ?? 0);
+        $payment_status = $input['payment_status'] ?? 'unpaid';
+        $registration_date = date('Y-m-d');
+        
+        $stmt->bind_param(
+            'ssssssssssiiiddsss',
+            $student_id,
+            $input['full_name'],
+            $input['grade_class'],
+            $input['section'] ?? '',
+            $input['father_name'] ?? '',
+            $input['mother_name'] ?? '',
+            $input['date_of_birth'] ?? null,
+            $input['gender'] ?? '',
+            $input['phone'] ?? '',
+            $input['address'] ?? '',
+            $input['bus_route_id'],
+            $input['bus_number'],
+            $morning_pickup,
+            $evening_drop,
+            $amount_paid,
+            $total_amount,
+            $payment_status,
+            $registration_date
+        );
+        
+        if ($stmt->execute()) {
+            $student_db_id = $db->insert_id;
+            
+            // Generate QR code data
+            $qrData = [
+                'student_id' => $student_id,
+                'name' => $input['full_name'],
+                'bus_number' => $input['bus_number'],
+                'grade' => $input['grade_class']
+            ];
+            
+            // Save QR code info
+            $qrCode = $student_id . '_QR';
+            $qrStmt = $db->prepare("
+                INSERT INTO student_qr_codes (student_id, qr_code, qr_data) 
+                VALUES (?, ?, ?)
+            ");
+            $qrStmt->bind_param('iss', $student_db_id, $qrCode, json_encode($qrData));
+            $qrStmt->execute();
+            
+            echo json_encode([
+                'success' => true,
+                'message' => 'Student added successfully',
+                'student_id' => $student_id,
+                'qr_code' => $qrCode,
+                'id' => $student_db_id
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Failed to add student: ' . $db->error]);
+        }
+        break;
+        
+    default:
+        echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+        break;
+}
+
+
+
+<?php
+/**
+ * Sync API - Bulk sync attendance records from mobile
+ * Endpoint: /api/index.php?endpoint=sync
+ * Methods: POST
+ */
+
+require_once 'index.php';
+
+$db = getDB();
+$method = $_SERVER['REQUEST_METHOD'];
+
+if ($method !== 'POST') {
+    echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+    exit;
+}
+
+$input = json_decode(file_get_contents('php://input'), true);
+
+if (!$input || !isset($input['records']) || !is_array($input['records'])) {
+    echo json_encode(['success' => false, 'message' => 'Invalid sync data']);
+    exit;
+}
+
+$device_id = $input['device_id'] ?? 'unknown';
+$synced = 0;
+$failed = 0;
+$errors = [];
+
+foreach ($input['records'] as $record) {
+    try {
+        // Validate required fields
+        if (!isset($record['student_id']) || !isset($record['attendance_type'])) {
+            $failed++;
+            $errors[] = ['record' => $record, 'error' => 'Missing required fields'];
+            continue;
+        }
+        
+        // Get student database ID
+        $studentStmt = $db->prepare("SELECT id FROM students WHERE student_id = ?");
+        $studentStmt->bind_param('s', $record['student_id']);
+        $studentStmt->execute();
+        $studentResult = $studentStmt->get_result();
+        $student = $studentResult->fetch_assoc();
+        
+        if (!$student) {
+            $failed++;
+            $errors[] = ['student_id' => $record['student_id'], 'error' => 'Student not found'];
+            continue;
+        }
+        
+        // Check for duplicate (optional)
+        if (isset($record['attendance_time'])) {
+            $checkStmt = $db->prepare("
+                SELECT id FROM attendance_records 
+                WHERE student_id = ? AND attendance_type = ? 
+                AND attendance_time = ? AND DATE(attendance_date) = DATE(?)
+            ");
+            $checkStmt->bind_param('isss', $student['id'], $record['attendance_type'], 
+                                   $record['attendance_time'], $record['attendance_time']);
+            $checkStmt->execute();
+            $checkResult = $checkStmt->get_result();
+            if ($checkResult->num_rows > 0) {
+                $failed++;
+                $errors[] = ['student_id' => $record['student_id'], 'error' => 'Duplicate record'];
+                continue;
+            }
+        }
+        
+        // Insert attendance
+        $stmt = $db->prepare("
+            INSERT INTO attendance_records (
+                student_id, attendance_type, attendance_time, attendance_date,
+                latitude, longitude, device_id, sync_status, recorded_by,
+                bus_number, route_number, qr_code
+            ) VALUES (?, ?, ?, DATE(?), ?, ?, ?, 'synced', ?, ?, ?, ?)
+        ");
+        
+        $attendance_time = $record['attendance_time'] ?? date('Y-m-d H:i:s');
+        $latitude = $record['latitude'] ?? null;
+        $longitude = $record['longitude'] ?? null;
+        $recorded_by = $record['recorded_by'] ?? 'mobile_sync';
+        $bus_number = $record['bus_number'] ?? '';
+        $route_number = $record['route_number'] ?? '';
+        $qr_code = $record['qr_code'] ?? $record['student_id'] . '_QR';
+        
+        $stmt->bind_param(
+            'isssddsssss',
+            $student['id'],
+            $record['attendance_type'],
+            $attendance_time,
+            $attendance_time,
+            $latitude,
+            $longitude,
+            $device_id,
+            $recorded_by,
+            $bus_number,
+            $route_number,
+            $qr_code
+        );
+        
+        if ($stmt->execute()) {
+            $synced++;
+        } else {
+            $failed++;
+            $errors[] = ['student_id' => $record['student_id'], 'error' => $db->error];
+        }
+        
+    } catch (Exception $e) {
+        $failed++;
+        $errors[] = ['error' => $e->getMessage()];
+    }
+}
+
+echo json_encode([
+    'success' => true,
+    'synced' => $synced,
+    'failed' => $failed,
+    'errors' => $errors,
+    'timestamp' => date('Y-m-d H:i:s')
+]);
+
+above is a list of api that are used 
+i want you to create a flutter mobile application with these features
+1.fetches data from the api and then store them locally(for offline use)(detect when the device is online(connected to internet))and fetch the infomation seemlessly
+2.scan qrcode and matche the records of the student in the application(offline feature) 
+3.sync back the attandance collected via scanning the qrcode(detect when the device is online(connected to internet)and send back the attendance)
+4.store records offline once fetched from the api for offline use 
+
+the application will be tested in fluthub and dartpad but mainly the fluthub

@@ -1,0 +1,23 @@
+{
+  "name": "operations-manager",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Silverleaf Operations Manager — Transport, Kitchen, Facilities, Farm",
+  "workspaces": [
+    "apps/api",
+    "apps/web"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:all": "npm run dev",
+    "dev:api": "npm run dev -w apps/api",
+    "dev:web": "npm run dev -w apps/web",
+    "build": "npm run build --workspaces --if-present",
+    "test:webhook": "bash scripts/test-webhook.sh",
+    "backup:data": "bash scripts/backup-data.sh",
+    "templates:modules": "python3 scripts/create_module_workbook.py"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

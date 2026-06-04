@@ -1,0 +1,12 @@
+{
+  "sheet": "Dashboard",
+  "raw": [
+    ["", "", "Month:", "June", "", "", "", "", "", "", "", "", "", "", "", ""],
+    ["Key Performance Indicator", "Target", "Actual"],
+    ["1. Meal cost per child (TZS)", 3500, 3420],
+    ["2. Food safety audit score", 0.95, 0.92],
+    ["3. Wastage rate", 0.05, 0.048],
+    ["4. On-time meal service", 0.98, 0.96],
+    ["5. Parent satisfaction (kitchen)", 0.9, 0.88]
+  ]
+}
