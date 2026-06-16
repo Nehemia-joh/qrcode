@@ -1,4 +1,11 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Monorepo: .env is at repo root (apps/api/src → ../../../.env)
+const rootEnv = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../.env');
+dotenv.config({ path: rootEnv });
+
 import express from 'express';
 import cors from 'cors';
 import { transportRouter } from './routes/transport.js';

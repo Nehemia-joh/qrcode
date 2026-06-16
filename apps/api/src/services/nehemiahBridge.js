@@ -3,28 +3,28 @@ import { loadSheetRaw } from './sheetLoader.js';
 let dbPool = null;
 
 export function isNehemiahDbEnabled() {
-  if (process.env.NEHMIAH_DB_ENABLED === 'false') return false;
-  return !!(process.env.NEHMIAH_DB_HOST || process.env.NEHMIAH_DB_SOCKET);
+  if (process.env.NEHEMIAH_DB_ENABLED === 'false') return false;
+  return !!(process.env.NEHEMIAH_DB_HOST || process.env.NEHEMIAH_DB_SOCKET);
 }
 
 function buildMysqlPoolConfig() {
   const base = {
-    user: process.env.NEHMIAH_DB_USER || 'root',
-    password: process.env.NEHMIAH_DB_PASSWORD || '',
-    database: process.env.NEHMIAH_DB_NAME || 'school_bus_tracking',
+    user: process.env.NEHEMIAH_DB_USER || 'root',
+    password: process.env.NEHEMIAH_DB_PASSWORD || '',
+    database: process.env.NEHEMIAH_DB_NAME || 'school_bus_tracking',
     waitForConnections: true,
     connectionLimit: 3,
   };
-  if (process.env.NEHMIAH_DB_SOCKET) {
-    return { ...base, socketPath: process.env.NEHMIAH_DB_SOCKET };
+  if (process.env.NEHEMIAH_DB_SOCKET) {
+    return { ...base, socketPath: process.env.NEHEMIAH_DB_SOCKET };
   }
-  return { ...base, host: process.env.NEHMIAH_DB_HOST || 'localhost' };
+  return { ...base, host: process.env.NEHEMIAH_DB_HOST || 'localhost' };
 }
 
 async function getDb() {
   if (dbPool) return dbPool;
   if (!isNehemiahDbEnabled()) return null;
-  if (!process.env.NEHMIAH_DB_HOST && !process.env.NEHMIAH_DB_SOCKET) return null;
+  if (!process.env.NEHEMIAH_DB_HOST && !process.env.NEHEMIAH_DB_SOCKET) return null;
   try {
     const mysql = await import('mysql2/promise');
     dbPool = mysql.createPool(buildMysqlPoolConfig());
@@ -85,7 +85,7 @@ async function statsFromMysql() {
 }
 
 async function statsFromPhpApi() {
-  const base = process.env.NEHMIAH_API_BASE_URL || process.env.NEHEMIAH_API_BASE_URL;
+  const base = process.env.NEHEMIAH_API_BASE_URL || process.env.NEHEMIAH_API_BASE_URL;
   if (!base) return null;
   try {
     const url = `${base.replace(/\/$/, '')}/stats.php`;
@@ -212,9 +212,9 @@ export async function getFinanceAlerts(limit = 50) {
 }
 
 export async function checkNehemiahConnection() {
-  const qrcodeUrl = process.env.NEHMIAH_APP_URL || process.env.QRCODE_APP_URL;
+  const qrcodeUrl = process.env.NEHEMIAH_APP_URL || process.env.QRCODE_APP_URL;
 
-  if (!isNehemiahDbEnabled() && !process.env.NEHMIAH_API_BASE_URL) {
+  if (!isNehemiahDbEnabled() && !process.env.NEHEMIAH_API_BASE_URL) {
     return {
       connected: false,
       mode: 'master_sheet_fallback',
@@ -237,7 +237,7 @@ export async function checkNehemiahConnection() {
       qrcodeUrl: qrcodeUrl || null,
     };
   }
-  const base = process.env.NEHMIAH_API_BASE_URL;
+  const base = process.env.NEHEMIAH_API_BASE_URL;
   if (base) {
     try {
       const res = await fetch(`${base.replace(/\/$/, '')}/stats.php`);
@@ -367,13 +367,13 @@ export async function testNehemiahDatabase() {
     }
     const [tables] = await db.query(
       `SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_NAME IN ('students','attendance_records','bus_routes','student_qr_codes')`,
-      [process.env.NEHMIAH_DB_NAME || 'school_bus_tracking']
+      [process.env.NEHEMIAH_DB_NAME || 'school_bus_tracking']
     );
     const names = tables.map((t) => t.TABLE_NAME);
     return {
       ok: true,
       message: 'Connected to Bus QR MySQL.',
-      database: process.env.NEHMIAH_DB_NAME || 'school_bus_tracking',
+      database: process.env.NEHEMIAH_DB_NAME || 'school_bus_tracking',
       tablesFound: names,
       tablesExpected: ['students', 'attendance_records', 'bus_routes', 'student_qr_codes'],
     };

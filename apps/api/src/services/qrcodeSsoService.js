@@ -1,9 +1,9 @@
 import crypto from 'crypto';
 
-const SSO_TTL_SEC = Number(process.env.NEHMIAH_SSO_TTL_SEC || 300);
+const SSO_TTL_SEC = Number(process.env.NEHEMIAH_SSO_TTL_SEC || 300);
 
 function getSsoSecret() {
-  return process.env.NEHMIAH_SSO_SECRET || process.env.WEBHOOK_SECRET || 'dev-webhook-secret';
+  return process.env.NEHEMIAH_SSO_SECRET || process.env.WEBHOOK_SECRET || 'dev-webhook-secret';
 }
 
 function base64url(buf) {
@@ -31,7 +31,7 @@ export function createQrcodeSsoToken(opsUser, schoolId = 'sl-main') {
 }
 
 export function getQrcodeAppBaseUrl() {
-  const url = process.env.NEHMIAH_APP_URL || process.env.QRCODE_APP_URL || '';
+  const url = process.env.NEHEMIAH_APP_URL || process.env.QRCODE_APP_URL || '';
   return url.replace(/\/$/, '');
 }
 
