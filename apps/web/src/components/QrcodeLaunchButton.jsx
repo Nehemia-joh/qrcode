@@ -28,7 +28,9 @@ export default function QrcodeLaunchButton({
         `/api/nehemiah/sso-url?schoolId=${schoolId}&returnTo=${encodeURIComponent(returnTo)}`
       );
       if (!res.url) throw new Error(res.message || 'SSO not configured');
-      window.open(res.url, '_blank', 'noopener,noreferrer');
+      const w = window.open(res.url, '_blank', 'noopener,noreferrer');
+      // If the browser blocks popups, fall back to same-tab navigation.
+      if (!w) window.location.href = res.url;
     } catch (e) {
       setError(e.message);
     } finally {

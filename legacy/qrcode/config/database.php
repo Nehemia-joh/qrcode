@@ -4,14 +4,14 @@ require_once __DIR__ . '/../includes/load_env.php';
 // ============================================
 // DATABASE CONFIGURATION
 // ============================================
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'school_bus_tracking');
-define('DB_USER', 'root');
-define('DB_PASS', 'chance00');
+define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_NAME', getenv('DB_NAME') ?: 'school_bus_tracking');
+define('DB_USER', getenv('DB_USER') ?: 'bus_ops');
+define('DB_PASS', getenv('DB_PASS') ?: 'chance00');
 
 // Site configuration
 define('SITE_NAME', 'School Bus Tracking System');
-define('SITE_URL', 'http://localhost/school-bus-tracking/');
+define('SITE_URL', getenv('SITE_URL') ?: 'http://localhost/school-bus-tracking/');
 
 // Session timeout (30 minutes)
 define('SESSION_TIMEOUT', 1800);

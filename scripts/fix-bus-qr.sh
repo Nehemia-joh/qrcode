@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fix Bus QR: Nginx symlink + MySQL password + DB import + admin login (admin / admin123)
+# Fix Bus QR: Nginx symlink + MySQL bus_ops user + DB import + admin login (admin / admin123)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -7,9 +7,10 @@ HTML_LINK="/var/www/html/school-bus-tracking"
 SQL_FILE="$ROOT/legacy/qrcode/database/first_database.sql"
 NGINX_SITE="school-bus-tracking"
 DB_PASS="chance00"
+DB_APP_USER="bus_ops"
 ADMIN_PASS="admin123"
 
-echo "=== Fix Bus QR login ==="
+echo "=== Fix Bus QR (MySQL + Nginx) ==="
 echo ""
 
 if [[ $EUID -ne 0 ]]; then
@@ -39,36 +40,23 @@ nginx -t
 systemctl reload nginx
 echo "OK: Nginx → http://localhost/school-bus-tracking/"
 
-# --- MySQL: root password + database ---
-echo "Configuring MySQL root password..."
-if mysql -e "SELECT 1" 2>/dev/null; then
-  mysql <<SQL
+# --- MySQL: socket auth as root, then create bus_ops (works on Ubuntu) ---
+echo "Configuring MySQL (bus_ops user for PHP + Operations API)..."
+mysql <<SQL
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${DB_PASS}';
-FLUSH PRIVILEGES;
-SQL
-elif mysql -u root -p"${DB_PASS}" -e "SELECT 1" 2>/dev/null; then
-  echo "OK: root password already set"
-else
-  mysql <<SQL || mysql <<SQL2
-ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${DB_PASS}';
-FLUSH PRIVILEGES;
-SQL
-ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_PASS}';
-FLUSH PRIVILEGES;
-SQL2
-fi
-
-mysql -u root -p"${DB_PASS}" <<SQL
 CREATE DATABASE IF NOT EXISTS school_bus_tracking CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER IF NOT EXISTS '${DB_APP_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';
+GRANT ALL PRIVILEGES ON school_bus_tracking.* TO '${DB_APP_USER}'@'localhost';
+FLUSH PRIVILEGES;
 SQL
 
 if [[ -f "$SQL_FILE" ]]; then
-  mysql -u root -p"${DB_PASS}" school_bus_tracking < "$SQL_FILE"
+  mysql -u "${DB_APP_USER}" -p"${DB_PASS}" school_bus_tracking < "$SQL_FILE"
   echo "OK: Imported schema"
 fi
 
-# --- Admin password: match login page (admin / admin123) ---
-php -r "
+# --- Admin password: match Operations login (admin / admin123) ---
+DB_USER="${DB_APP_USER}" DB_PASS="${DB_PASS}" php -r "
 require '${ROOT}/legacy/qrcode/config/database.php';
 \$db = getDB();
 \$hash = password_hash('${ADMIN_PASS}', PASSWORD_DEFAULT);
@@ -93,6 +81,13 @@ cat <<EOF
 URL:      http://localhost/school-bus-tracking/
 Login:    admin / admin123
 
-Operations: http://localhost:8080  (admin / admin123 → Transport → Open Bus QR)
+MySQL:    ${DB_APP_USER} / ${DB_PASS}  (database: school_bus_tracking)
+
+Operations .env should use:
+  NEHEMIAH_DB_USER=${DB_APP_USER}
+  NEHEMIAH_DB_PASSWORD=${DB_PASS}
+  NEHEMIAH_DB_ENABLED=true
+
+Then restart: npm run start:server
 
 EOF
