@@ -24,12 +24,13 @@ export default function NehemiahPanel() {
   useEffect(() => {
     Promise.all([
       apiJson(`/api/nehemiah/stats?schoolId=${schoolId}`),
+      apiJson('/api/nehemiah/status').catch(() => null),
       apiJson(`/api/attendance/live?limit=6&schoolId=${schoolId}`).catch(() => null),
       apiJson(`/api/nehemiah/attendance/recent?limit=6&schoolId=${schoolId}`).catch(() => ({ records: [] })),
       apiJson('/api/nehemiah/finance-alerts?limit=10').catch(() => ({ alerts: [] })),
       apiJson('/api/nehemiah/sms/config').catch(() => ({ provider: 'mock' })),
     ])
-      .then(([s, live, sheet, a, sms]) => {
+      .then(([s, status, live, sheet, a, sms]) => {
         const records = live?.records?.length ? live.records : sheet.records || [];
         setStats({
           ...s,
@@ -41,7 +42,11 @@ export default function NehemiahPanel() {
         });
         setRecent(records);
         setAlerts(a.alerts || []);
-        setConnection(live?.records?.length ? { connected: true, mode: 'live_feed' } : null);
+        setConnection(
+          live?.records?.length
+            ? { connected: true, mode: 'live_feed', qrcodeLinked: status?.qrcodeLinked }
+            : status
+        );
         setSmsConfig(sms);
       })
       .catch((e) => setError(e.message));
@@ -91,7 +96,17 @@ export default function NehemiahPanel() {
       <p className="section-note">
         Data: <strong>{stats.source}</strong>
         {connection && (
-          <> · Bridge: {connection.connected ? connection.mode : 'sheet fallback'}</>
+          <>
+            {' '}
+            · Bridge:{' '}
+            <strong>
+              {connection.connected
+                ? connection.mode
+                : connection.qrcodeLinked
+                  ? 'Bus QR linked (sheet fallback)'
+                  : 'sheet fallback'}
+            </strong>
+          </>
         )}
         {smsConfig && <> · SMS: <strong>{smsConfig.provider}</strong></>}
         {stats.note && <> — {stats.note}</>}

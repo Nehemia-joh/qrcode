@@ -7,12 +7,13 @@ The app works without MySQL (Google Sheets + webhooks). When you are ready:
 ```env
 NEHEMIAH_DB_ENABLED=true
 NEHEMIAH_DB_HOST=localhost
-NEHEMIAH_DB_USER=your_user
-NEHEMIAH_DB_PASSWORD=your_password
+NEHEMIAH_DB_USER=bus_ops
+NEHEMIAH_DB_PASSWORD=chance00
 NEHEMIAH_DB_NAME=school_bus_tracking
+NEHEMIAH_APP_URL=http://localhost/school-bus-tracking
 ```
 
-Use the same database as `legacy/qrcode/config/database.php`.
+Use the same database as `legacy/qrcode/config/database.php`. After `sudo bash scripts/setup-linux-qrcode.sh`, prefer **`bus_ops`** for the Node API (Ubuntu `root` often blocks TCP password login). PHP can keep using `root` / `chance00`.
 
 Set `NEHEMIAH_DB_ENABLED=false` to force sheet-only mode even if host is set.
 

@@ -3,25 +3,31 @@ import { loadSheetRaw } from './sheetLoader.js';
 let dbPool = null;
 
 export function isNehemiahDbEnabled() {
-  if (process.env.NEHEMIAH_DB_ENABLED === 'false') return false;
-  return !!process.env.NEHEMIAH_DB_HOST;
+  if (process.env.NEHMIAH_DB_ENABLED === 'false') return false;
+  return !!(process.env.NEHMIAH_DB_HOST || process.env.NEHMIAH_DB_SOCKET);
+}
+
+function buildMysqlPoolConfig() {
+  const base = {
+    user: process.env.NEHMIAH_DB_USER || 'root',
+    password: process.env.NEHMIAH_DB_PASSWORD || '',
+    database: process.env.NEHMIAH_DB_NAME || 'school_bus_tracking',
+    waitForConnections: true,
+    connectionLimit: 3,
+  };
+  if (process.env.NEHMIAH_DB_SOCKET) {
+    return { ...base, socketPath: process.env.NEHMIAH_DB_SOCKET };
+  }
+  return { ...base, host: process.env.NEHMIAH_DB_HOST || 'localhost' };
 }
 
 async function getDb() {
   if (dbPool) return dbPool;
   if (!isNehemiahDbEnabled()) return null;
-  const host = process.env.NEHEMIAH_DB_HOST;
-  if (!host) return null;
+  if (!process.env.NEHMIAH_DB_HOST && !process.env.NEHMIAH_DB_SOCKET) return null;
   try {
     const mysql = await import('mysql2/promise');
-    dbPool = mysql.createPool({
-      host,
-      user: process.env.NEHMIAH_DB_USER || 'root',
-      password: process.env.NEHMIAH_DB_PASSWORD || '',
-      database: process.env.NEHMIAH_DB_NAME || 'school_bus_tracking',
-      waitForConnections: true,
-      connectionLimit: 3,
-    });
+    dbPool = mysql.createPool(buildMysqlPoolConfig());
     await dbPool.query('SELECT 1');
     return dbPool;
   } catch (e) {
@@ -133,7 +139,7 @@ function statsFromSheetAttendance(schoolId = 'sl-main') {
     buses: { active: null },
     financeAlerts: null,
     recentScans: recent,
-    note: 'Set NEHEMIAH_DB_* in .env for live QR/finance from Nehemiah database.',
+    note: 'Bus QR MySQL linked — live stats appear when NEHEMIAH_DB_* connects.',
   };
 }
 
@@ -193,7 +199,7 @@ export async function getFinanceAlerts(limit = 50) {
         dailyRate: Number(r.daily_deduction_rate),
         smsRecommended: !!r.parent_phone,
       })),
-      note: 'SMS/WhatsApp integration: wire Twilio or Africa\'s Talking in phase 5.',
+      note: 'Live fee alerts from Bus QR database.',
     };
   }
 
@@ -206,22 +212,44 @@ export async function getFinanceAlerts(limit = 50) {
 }
 
 export async function checkNehemiahConnection() {
+  const qrcodeUrl = process.env.NEHMIAH_APP_URL || process.env.QRCODE_APP_URL;
+
   if (!isNehemiahDbEnabled() && !process.env.NEHMIAH_API_BASE_URL) {
     return {
       connected: false,
       mode: 'master_sheet_fallback',
       enabled: false,
-      hint: 'Set NEHEMIAH_DB_HOST when ready to link MySQL.',
+      qrcodeLinked: !!qrcodeUrl,
+      qrcodeUrl: qrcodeUrl || null,
+      hint: qrcodeUrl
+        ? 'Bus QR SSO linked. Set NEHEMIAH_DB_* for live attendance and fee data.'
+        : 'Set NEHEMIAH_APP_URL for Bus QR SSO, then NEHEMIAH_DB_* for live data.',
     };
   }
 
   const db = await getDb();
-  if (db) return { connected: true, mode: 'mysql', enabled: true };
+  if (db) {
+    return {
+      connected: true,
+      mode: 'mysql',
+      enabled: true,
+      qrcodeLinked: !!qrcodeUrl,
+      qrcodeUrl: qrcodeUrl || null,
+    };
+  }
   const base = process.env.NEHMIAH_API_BASE_URL;
   if (base) {
     try {
       const res = await fetch(`${base.replace(/\/$/, '')}/stats.php`);
-      if (res.ok) return { connected: true, mode: 'php_api', enabled: true };
+      if (res.ok) {
+        return {
+          connected: true,
+          mode: 'php_api',
+          enabled: true,
+          qrcodeLinked: !!qrcodeUrl,
+          qrcodeUrl: qrcodeUrl || null,
+        };
+      }
     } catch {
       /* fall through */
     }
@@ -230,9 +258,11 @@ export async function checkNehemiahConnection() {
     connected: false,
     mode: 'master_sheet_fallback',
     enabled: isNehemiahDbEnabled(),
+    qrcodeLinked: !!qrcodeUrl,
+    qrcodeUrl: qrcodeUrl || null,
     hint: isNehemiahDbEnabled()
-      ? 'MySQL configured but connection failed — check NEHEMIAH_DB_* credentials.'
-      : 'Using Google Sheet / webhook data until database is linked.',
+      ? 'MySQL configured but connection failed — try NEHEMIAH_DB_USER=bus_ops after setup-linux-qrcode.sh'
+      : 'Using Google Sheet / webhook data until MySQL is connected.',
   };
 }
 
@@ -269,6 +299,44 @@ export async function enrichAttendanceFromDb(payload) {
   }
 }
 
+/** Live student QR counts per route from Bus QR MySQL */
+export async function getQrRegistryStats() {
+  const db = await getDb();
+  if (!db) return null;
+
+  const [routeRows] = await db.query(`
+    SELECT COALESCE(br.route_name, NULLIF(s.bus_number, ''), 'Unassigned') AS route,
+           COUNT(DISTINCT s.id) AS studentsWithQr
+    FROM students s
+    INNER JOIN student_qr_codes sq ON sq.student_id = s.id AND sq.is_active = 1
+    LEFT JOIN bus_routes br ON br.id = s.bus_route_id
+    WHERE s.status = 'active'
+    GROUP BY route
+    ORDER BY route
+  `);
+
+  const [totalRows] = await db.query(`
+    SELECT COUNT(DISTINCT s.id) AS total
+    FROM students s
+    INNER JOIN student_qr_codes sq ON sq.student_id = s.id AND sq.is_active = 1
+    WHERE s.status = 'active'
+  `);
+
+  const routes = routeRows.map((r) => ({
+    route: String(r.route),
+    studentsWithQr: Number(r.studentsWithQr),
+  }));
+
+  return {
+    hasData: routes.length > 0,
+    source: 'mysql',
+    routes,
+    totalStudents: Number(totalRows[0]?.total ?? 0),
+    activeQrCodes: Number(totalRows[0]?.total ?? 0),
+    note: 'Live from Bus QR (qrcode) database.',
+  };
+}
+
 export async function testNehemiahDatabase() {
   if (!isNehemiahDbEnabled()) {
     return {
@@ -292,21 +360,22 @@ export async function testNehemiahDatabase() {
         message: 'Could not connect to MySQL.',
         steps: [
           'Verify MySQL is running and credentials match legacy/qrcode/config/database.php',
-          'Grant the user access to school_bus_tracking',
+          'Run: sudo bash scripts/setup-linux-qrcode.sh (creates bus_ops user)',
+          'Or set NEHEMIAH_DB_USER=bus_ops and NEHEMIAH_DB_PASSWORD=chance00',
         ],
       };
     }
     const [tables] = await db.query(
-      `SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_NAME IN ('students','attendance_records','bus_routes')`,
-      [process.env.NEHEMIAH_DB_NAME || 'school_bus_tracking']
+      `SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_NAME IN ('students','attendance_records','bus_routes','student_qr_codes')`,
+      [process.env.NEHMIAH_DB_NAME || 'school_bus_tracking']
     );
     const names = tables.map((t) => t.TABLE_NAME);
     return {
       ok: true,
-      message: 'Connected to Nehemiah MySQL.',
-      database: process.env.NEHEMIAH_DB_NAME || 'school_bus_tracking',
+      message: 'Connected to Bus QR MySQL.',
+      database: process.env.NEHMIAH_DB_NAME || 'school_bus_tracking',
       tablesFound: names,
-      tablesExpected: ['students', 'attendance_records', 'bus_routes'],
+      tablesExpected: ['students', 'attendance_records', 'bus_routes', 'student_qr_codes'],
     };
   } catch (e) {
     return { ok: false, message: e.message };

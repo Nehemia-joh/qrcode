@@ -49,9 +49,9 @@ transportRouter.get('/budget', (req, res) => {
   res.json(getTransportBudget(schoolId));
 });
 
-transportRouter.get('/qr', (req, res) => {
+transportRouter.get('/qr', async (req, res) => {
   const schoolId = resolveSchoolId(req.query.schoolId);
-  res.json(getTransportQrStats(schoolId));
+  res.json(await getTransportQrStats(schoolId));
 });
 
 transportRouter.get('/export/pdf', requireAdmin, async (req, res) => {

@@ -10,6 +10,7 @@ build/
 legacy/qrcode/vendor/
 legacy/qrcode/phpqrcode/cache/
 legacy/qrcode/qrcodes/*.png
+legacy/qrcode/.env
 data/sheets/
 data/ops-users.json
 data/ops-reports.json

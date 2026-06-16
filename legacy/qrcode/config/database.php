@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../includes/load_env.php';
+
 // ============================================
 // DATABASE CONFIGURATION
 // ============================================

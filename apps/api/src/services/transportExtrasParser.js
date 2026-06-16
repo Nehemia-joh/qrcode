@@ -1,5 +1,6 @@
 import { loadSheetRaw, schoolHasSheetData } from './sheetLoader.js';
 import { getSchoolCampusMeta, campusSheetNameMatches } from '../data/schoolCampusMap.js';
+import { getQrRegistryStats } from './nehemiahBridge.js';
 
 export function getTransportBuses(schoolId) {
   if (!schoolHasSheetData(schoolId)) return { hasData: false, buses: [] };
@@ -78,8 +79,13 @@ export function getTransportBudget(schoolId) {
   };
 }
 
-export function getTransportQrStats(schoolId) {
-  if (!schoolHasSheetData(schoolId)) return { hasData: false, routes: [] };
+export async function getTransportQrStats(schoolId) {
+  const live = await getQrRegistryStats();
+  if (live?.hasData) {
+    return { ...live, schoolId };
+  }
+
+  if (!schoolHasSheetData(schoolId)) return { hasData: false, routes: [], source: 'none' };
   const rows = loadSheetRaw(schoolId, 'QR_Code');
   if (rows.length < 2) return { hasData: false, routes: [] };
 
@@ -98,9 +104,10 @@ export function getTransportQrStats(schoolId) {
   return {
     hasData: routes.length > 0,
     schoolId,
+    source: 'master_sheet',
     routes,
     totalStudents: routes.reduce((s, r) => s + r.studentsWithQr, 0),
-    note: 'Full QR generation links to Nehemiah when database is connected.',
+    note: 'From master sheet QR Code tab. Link Bus QR MySQL for live counts.',
   };
 }
 
