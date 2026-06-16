@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSchool } from '../context/SchoolContext';
 import { useAuth } from '../context/AuthContext';
 import { apiJson } from '../api/client';
+import QrcodeLaunchButton from './QrcodeLaunchButton';
 
 function formatTzs(n) {
   if (n == null) return '—';
@@ -86,6 +87,7 @@ export default function NehemiahPanel() {
   return (
     <section className="section-panel nehemiah-panel">
       <h2>QR attendance & finance (Nehemiah)</h2>
+      <QrcodeLaunchButton returnTo="index.php" label="Open Bus QR dashboard" showStatus={false} />
       <p className="section-note">
         Data: <strong>{stats.source}</strong>
         {connection && (

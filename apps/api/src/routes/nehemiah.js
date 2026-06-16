@@ -11,8 +11,33 @@ import {
 import { requireAdmin } from '../middleware/permissions.js';
 import { notifyParentFeeAlert, getSmsLog, getSmsConfig } from '../services/smsService.js';
 import { notifyParentFeeEmail, getEmailConfig } from '../services/emailService.js';
+import { buildQrcodeSsoUrl, getQrcodeAppBaseUrl, getQrcodeQuickLinks } from '../services/qrcodeSsoService.js';
 
 export const nehemiahRouter = Router();
+
+nehemiahRouter.get('/qrcode/config', (_req, res) => {
+  const base = getQrcodeAppBaseUrl();
+  res.json({
+    ok: true,
+    configured: !!base,
+    appUrl: base || null,
+    links: getQrcodeQuickLinks(),
+    hint: base
+      ? null
+      : 'Set NEHEMIAH_APP_URL in .env to link Transport login to legacy/qrcode (qrcode.zip).',
+  });
+});
+
+/** One-click SSO into legacy PHP qrcode app (same username in both systems) */
+nehemiahRouter.get('/sso-url', (req, res) => {
+  const schoolId = resolveSchoolId(req.query.schoolId);
+  const returnTo = req.query.returnTo || 'index.php';
+  const result = buildQrcodeSsoUrl(req.user, { schoolId, returnTo });
+  if (!result.configured) {
+    return res.status(503).json({ ok: false, ...result });
+  }
+  res.json({ ok: true, ...result });
+});
 
 nehemiahRouter.get('/status', async (_req, res) => {
   res.json({

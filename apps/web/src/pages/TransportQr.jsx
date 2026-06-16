@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useSchool } from '../context/SchoolContext';
 import { apiJson } from '../api/client';
 import TransportNav from '../components/TransportNav';
+import QrcodeLaunchButton from '../components/QrcodeLaunchButton';
 import DataTable from '../components/DataTable';
 
 export default function TransportQr() {
@@ -20,6 +21,15 @@ export default function TransportQr() {
       </p>
       <h2 className="page-title">Student QR registry — {currentSchool.name}</h2>
       <TransportNav />
+      <section className="section-panel">
+        <h2>Bus QR system (qrcode.zip)</h2>
+        <p className="section-note">
+          While logged into Transport here, open the Nehemiah PHP app without signing in again (same
+          username in both systems).
+        </p>
+        <QrcodeLaunchButton returnTo="finance/qrcodes.php" />
+        <QrcodeLaunchButton returnTo="finance/students.php" label="Students & balances" className="btn-sm" showStatus={false} />
+      </section>
       <p className="section-note">
         From tab <strong>QR Code</strong>. Live generation stays in Nehemiah until database is linked.
       </p>

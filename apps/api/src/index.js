@@ -22,6 +22,7 @@ import { requireSchoolAccess } from './middleware/permissions.js';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+const HOST = process.env.HOST || '0.0.0.0';
 
 const corsOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
@@ -57,8 +58,8 @@ app.use('/api/attendance', attendanceRouter);
 app.use('/api/system', systemRouter);
 app.use('/api/admin', adminRouter);
 
-app.listen(PORT, () => {
-  console.log(`API listening on http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`API listening on http://${HOST}:${PORT}`);
   const sms = getSmsConfig();
   console.log(`[sms] Provider: ${sms.provider}${sms.provider === 'mock' ? ' (logs to data/sms-log.json)' : ''}`);
   console.log('[webhook] POST /api/webhooks/attendance (X-Webhook-Secret)');

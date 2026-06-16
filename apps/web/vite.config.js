@@ -11,4 +11,12 @@ export default defineConfig({
       '/api': 'http://localhost:4000',
     },
   },
+  preview: {
+    port: 8080,
+    host: true,
+    strictPort: true,
+    proxy: {
+      '/api': 'http://localhost:4000',
+    },
+  },
 });

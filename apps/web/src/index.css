@@ -608,6 +608,24 @@ table.data-table thead th {
   border-color: var(--sl-navy);
 }
 
+.transport-qrcode-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0.75rem 0 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--sl-white);
+  border: 1px solid var(--sl-border);
+  border-radius: 8px;
+}
+
+.error-inline {
+  color: var(--sl-danger);
+  font-size: 0.875rem;
+  margin-left: 0.5rem;
+}
+
 .incident-cards {
   display: flex;
   flex-direction: column;

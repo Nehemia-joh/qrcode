@@ -54,6 +54,33 @@ function loginUser($username, $password) {
     return false;
 }
 
+// Log in by username only (SSO from Silverleaf Operations Manager)
+function loginUserByUsername($username) {
+    $db = getDB();
+    $stmt = $db->prepare("SELECT id, username, email, role, full_name FROM users WHERE username = ? AND status = 'active'");
+    $stmt->bind_param('s', $username);
+    $stmt->execute();
+    $user = $stmt->get_result()->fetch_assoc();
+    if (!$user) {
+        return false;
+    }
+
+    $_SESSION['user_id'] = $user['id'];
+    $_SESSION['username'] = $user['username'];
+    $_SESSION['email'] = $user['email'];
+    $_SESSION['role'] = $user['role'];
+    $_SESSION['full_name'] = $user['full_name'];
+    $_SESSION['logged_in'] = true;
+    $_SESSION['last_activity'] = time();
+    $_SESSION['sso_from_ops'] = true;
+
+    $updateStmt = $db->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
+    $updateStmt->bind_param('i', $user['id']);
+    $updateStmt->execute();
+
+    return true;
+}
+
 // Logout user
 function logoutUser() {
     session_unset();
