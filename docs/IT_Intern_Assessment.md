@@ -1,126 +1,130 @@
-# IT Intern Assessment — Operations System
+# Operations System — Intern Task
 
-**Organisation:** Silverleaf Operations  
-**Role:** IT Intern  
-**Time allowed:** about 2 hours of work  
-**Deadline:** submit within **2 days** of receiving this email  
+Deadline: submit within 2 days of getting this message.
 
----
-
-## What this is
-
-We have a school **Operations system**. Your job is **not** to build a new system.
-
-Your job is to:
-
-1. Get the project  
-2. Start it  
-3. Open it in a browser  
-4. Log in  
-5. Send proof that it worked  
+Project link: https://github.com/Nehemia-joh/qrcode
 
 ---
 
-## How to get the project
+## 1. Get the project
 
-1. Open: **https://github.com/Nehemia-joh/qrcode**  
-2. Click **Fork** (create your own copy), **or** click **Code → Download ZIP**  
-3. If you use Git:
+1. Open the project link above.
+2. Click Fork.
+3. On your computer, open a terminal and run:
 
-```bash
-git clone https://github.com/YOUR-USERNAME/qrcode.git
+git clone https://github.com/YOUR-GITHUB-USERNAME/qrcode.git
+
 cd qrcode
-```
+
+Use your real GitHub username in that link.
 
 ---
 
-## What you need to do
+## 2. Start the system
 
-1. Open a terminal and go into the project folder.  
+Run:
 
-2. Start the system:
-
-```bash
 bash scripts/start-all.sh
-```
 
-If that fails, read any error message carefully and try again after fixing obvious issues (for example: ports already in use → run `bash scripts/stop-all.sh` first).
+If a port is already in use, run this, then start again:
 
-3. Open **Operations** in your browser:  
-   **http://localhost:8080/login**
+bash scripts/stop-all.sh
 
-4. Log in with:
+bash scripts/start-all.sh
 
-| Field | Value |
-|--------|--------|
-| Username | `admin` |
-| Password | `admin123` |
-
-5. Open **Bus QR** in your browser:  
-   **http://localhost/school-bus-tracking/**  
-
-   If that page does not open, try: **http://localhost:8081/**
-
-6. Log in with the **same** username and password:
-
-| Field | Value |
-|--------|--------|
-| Username | `admin` |
-| Password | `admin123` |
-
-7. *(Optional)* In Operations, go to **Transport** and click **Open Bus QR**. Check whether it opens without asking you to log in again.
+Wait until it finishes starting.
 
 ---
 
-## What to submit (reply by email)
+## 3. Open and log in
 
-Send **one email** with:
+Open Operations:
 
-1. Screenshot of the **Operations** page after login  
-2. Screenshot of the **Bus QR** page after login  
-3. A short note (5–10 lines) covering:
-   - the command(s) you used  
-   - what worked  
-   - what did not work (if anything)  
-   - anything you found confusing  
+http://localhost:8080/login
 
-**Deadline:** within **2 days** of receiving this message.
+Username: admin
 
----
+Password: admin123
 
-## If something does not work
+Then open Bus QR:
 
-Write down:
+http://localhost/school-bus-tracking/
 
-- the exact error message  
-- which step failed (clone / start / Operations login / Bus QR login)
+If that does not open, try:
 
-Do **not** change the code unless you are asked to.
+http://localhost:8081/
 
-If you are stuck for more than 15–20 minutes, send a short question by email.
+Username: admin
+
+Password: admin123
+
+Take a screenshot of each page after login.
 
 ---
 
-## Important rules
+## 4. Your real task (we will check this on GitHub)
 
-- Use only the usernames and passwords in this brief.  
-- Do not share these passwords outside this assessment.  
-- Do not push secrets (`.env` files with real passwords) to GitHub.  
-- Be honest about what worked and what did not.
+Create a new file in the project:
+
+docs/intern-submissions/YOUR-NAME.md
+
+Example: if your name is Asha Juma, the file is:
+
+docs/intern-submissions/Asha-Juma.md
+
+Put this inside the file:
+
+Intern name: YOUR FULL NAME
+
+GitHub username: YOUR GITHUB USERNAME
+
+Date completed: YYYY-MM-DD
+
+Operations URL I opened: http://localhost:8080/login
+
+Bus QR URL I opened: write the URL that worked for you
+
+One thing I noticed in Operations: write one short sentence
+
+One improvement idea: write one short sentence
+
+Then save the file and run:
+
+mkdir -p docs/intern-submissions
+
+git add docs/intern-submissions/
+
+git commit -m "Add intern assessment submission"
+
+git push origin main
+
+Then on GitHub:
+
+1. Open your fork
+2. Click Contribute → Open pull request
+3. Target repo: Nehemia-joh/qrcode
+4. Title: Intern assessment - YOUR FULL NAME
+5. Create the pull request
+
+We will review your pull request on our side.
 
 ---
 
-## Quick reference
+## 5. Send by email
 
-| Item | Value |
-|------|--------|
-| GitHub | https://github.com/Nehemia-joh/qrcode |
-| Operations URL | http://localhost:8080/login |
-| Bus QR URL | http://localhost/school-bus-tracking/ |
-| Username | admin |
-| Password | admin123 |
-| Deadline | 2 days from receipt |
+Send:
+
+1. Screenshot of Operations after login
+2. Screenshot of Bus QR after login
+3. The link to your Pull Request
+4. A few lines on what worked and what did not
+
+---
+
+## If you get stuck
+
+Write the exact error and which step failed.
+
+Do not share the passwords with other people.
 
 Good luck.
-
-Silverleaf Operations — IT Intern Assessment
