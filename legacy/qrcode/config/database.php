@@ -12,9 +12,17 @@ define('DB_PASS', getenv('DB_PASS') ?: 'chance00');
 // Site configuration
 define('SITE_NAME', 'School Bus Tracking System');
 define('SITE_URL', getenv('SITE_URL') ?: 'http://localhost/school-bus-tracking/');
+define('OPS_APP_URL', rtrim(getenv('OPS_APP_URL') ?: 'http://localhost:8080', '/'));
 
 // Session timeout (30 minutes)
 define('SESSION_TIMEOUT', 1800);
+
+// Session cookie scoped to this app path (works under /school-bus-tracking/)
+$sitePath = parse_url(SITE_URL, PHP_URL_PATH) ?: '/';
+$cookiePath = rtrim($sitePath, '/') . '/';
+if ($cookiePath === '//') {
+    $cookiePath = '/';
+}
 
 // Get database connection
 function getDB() {
@@ -35,6 +43,12 @@ function getDB() {
 
 // Start session if not started
 if (session_status() === PHP_SESSION_NONE) {
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => $cookiePath,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
     session_start();
 }
 ?>

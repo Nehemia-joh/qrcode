@@ -3,13 +3,14 @@ import { useSchool } from '../context/SchoolContext';
 import { apiJson } from '../api/client';
 
 /**
- * Opens legacy/qrcode (Nehemiah Bus QR) with SSO — no second login when usernames match.
+ * Opens legacy/qrcode (Nehemiah Bus QR) with SSO — same-tab navigation for a seamless handoff.
  */
 export default function QrcodeLaunchButton({
   returnTo = 'index.php',
   label = 'Open Bus QR system',
   className = 'btn-primary',
   showStatus = true,
+  openInNewTab = false,
 }) {
   const { schoolId } = useSchool();
   const [config, setConfig] = useState(null);
@@ -28,12 +29,14 @@ export default function QrcodeLaunchButton({
         `/api/nehemiah/sso-url?schoolId=${schoolId}&returnTo=${encodeURIComponent(returnTo)}`
       );
       if (!res.url) throw new Error(res.message || 'SSO not configured');
-      const w = window.open(res.url, '_blank', 'noopener,noreferrer');
-      // If the browser blocks popups, fall back to same-tab navigation.
-      if (!w) window.location.href = res.url;
+      if (openInNewTab) {
+        const w = window.open(res.url, '_blank', 'noopener,noreferrer');
+        if (!w) window.location.assign(res.url);
+      } else {
+        window.location.assign(res.url);
+      }
     } catch (e) {
       setError(e.message);
-    } finally {
       setLoading(false);
     }
   }
@@ -41,8 +44,8 @@ export default function QrcodeLaunchButton({
   if (!config?.configured) {
     return showStatus ? (
       <p className="section-note">
-        Bus QR (qrcode.zip): set <code>NEHEMIAH_APP_URL</code> in server <code>.env</code> to enable
-        one-click login from Transport.
+        Bus QR: set <code>NEHEMIAH_APP_URL</code> in <code>.env</code>, then run{' '}
+        <code>bash scripts/sync-env.sh --auto</code>
       </p>
     ) : null;
   }
@@ -50,13 +53,13 @@ export default function QrcodeLaunchButton({
   return (
     <div className="qrcode-launch">
       <button type="button" className={className} onClick={openSso} disabled={loading}>
-        {loading ? 'Connecting…' : label}
+        {loading ? 'Opening Bus QR…' : label}
       </button>
       {error && <span className="error-inline">{error}</span>}
       {showStatus && (
         <p className="section-note" style={{ marginTop: '0.5rem' }}>
-          Logged into Operations as you → opens <strong>qrcode</strong> with the same username (
-          {config.appUrl}).
+          Same login — opens <strong>{config.appUrl}</strong> without signing in again.
+          {!openInNewTab && ' Use your browser back button to return to Operations.'}
         </p>
       )}
     </div>

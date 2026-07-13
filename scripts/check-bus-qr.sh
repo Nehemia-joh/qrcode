@@ -4,6 +4,10 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 LINK="/var/www/html/school-bus-tracking"
+# shellcheck source=lib/load-env.sh
+source "$ROOT/scripts/lib/load-env.sh"
+load_project_env "$ROOT"
+DB_PASS="${NEHEMIAH_DB_PASSWORD:-${DB_PASS:-chance00}}"
 
 echo "=== Bus QR diagnostics ==="
 echo ""
@@ -23,16 +27,23 @@ else
   echo "MISS: Nginx school-bus-tracking site (still using default → 404 for /school-bus-tracking/)"
 fi
 
-code80=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost/school-bus-tracking/" 2>/dev/null || echo "000")
+code80=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost/school-bus-tracking/index.php" 2>/dev/null || echo "000")
 code81=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:8081/" 2>/dev/null || echo "000")
 echo ""
 echo "http://localhost/school-bus-tracking/  → HTTP $code80"
-echo "http://localhost:8081/                 → HTTP $code81 (dev, no sudo)"
+echo "http://localhost:8081/                 → HTTP $code81 (dev fallback)"
 
-if mysql -u bus_ops -pchance00 -e "SELECT 1" school_bus_tracking 2>/dev/null; then
+if mysql -u bus_ops -p"${DB_PASS}" -e "SELECT 1" school_bus_tracking 2>/dev/null; then
   echo "OK:  MySQL bus_ops → school_bus_tracking"
 else
-  echo "MISS: MySQL bus_ops (run: sudo bash scripts/fix-bus-qr.sh)"
+  echo "MISS: MySQL bus_ops (check NEHEMIAH_DB_PASSWORD in .env)"
+fi
+
+if [[ "$code80" == "404" && -L "$LINK" ]]; then
+  echo ""
+  echo "WARN: Nginx symlink exists but returns 404 — www-data cannot read $ROOT"
+  echo "  Fix: chmod o+x /home/kiki /home/kiki/Documents /home/kiki/Documents/Operations_system"
+  echo "  Or:  sudo bash scripts/fix-bus-qr.sh"
 fi
 
 echo ""

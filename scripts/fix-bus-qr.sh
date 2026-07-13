@@ -3,12 +3,16 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# shellcheck source=lib/load-env.sh
+source "$ROOT/scripts/lib/load-env.sh"
+load_project_env "$ROOT"
+
 HTML_LINK="/var/www/html/school-bus-tracking"
 SQL_FILE="$ROOT/legacy/qrcode/database/first_database.sql"
 NGINX_SITE="school-bus-tracking"
-DB_PASS="chance00"
-DB_APP_USER="bus_ops"
-ADMIN_PASS="admin123"
+DB_PASS="${NEHEMIAH_DB_PASSWORD:-${DB_PASS:-chance00}}"
+DB_APP_USER="${NEHEMIAH_DB_USER:-${DB_USER:-bus_ops}}"
+ADMIN_PASS="${OPS_ADMIN_PASSWORD:-admin123}"
 
 echo "=== Fix Bus QR (MySQL + Nginx) ==="
 echo ""
@@ -29,6 +33,14 @@ fi
 ln -sfn "$ROOT/legacy/qrcode" "$HTML_LINK"
 echo "OK: $HTML_LINK → legacy/qrcode"
 
+# Nginx (www-data) must traverse from /var/www/html into $ROOT (home dirs are often 750).
+d="$ROOT"
+while [[ "$d" != "/" ]]; do
+  chmod o+x "$d" 2>/dev/null || true
+  d="$(dirname "$d")"
+done
+echo "OK: path permissions for www-data"
+
 mkdir -p "$ROOT/legacy/qrcode/phpqrcode/cache"
 chown -R www-data:www-data "$ROOT/legacy/qrcode/phpqrcode/cache" 2>/dev/null || true
 chmod -R 775 "$ROOT/legacy/qrcode/phpqrcode/cache" 2>/dev/null || true
@@ -40,20 +52,29 @@ nginx -t
 systemctl reload nginx
 echo "OK: Nginx → http://localhost/school-bus-tracking/"
 
-# --- MySQL: socket auth as root, then create bus_ops (works on Ubuntu) ---
+# --- MySQL: socket auth as root (sudo); sync bus_ops password from .env ---
 echo "Configuring MySQL (bus_ops user for PHP + Operations API)..."
 mysql <<SQL
-ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${DB_PASS}';
 CREATE DATABASE IF NOT EXISTS school_bus_tracking CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER IF NOT EXISTS '${DB_APP_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';
+ALTER USER '${DB_APP_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';
 GRANT ALL PRIVILEGES ON school_bus_tracking.* TO '${DB_APP_USER}'@'localhost';
 FLUSH PRIVILEGES;
 SQL
 
 if [[ -f "$SQL_FILE" ]]; then
-  mysql -u "${DB_APP_USER}" -p"${DB_PASS}" school_bus_tracking < "$SQL_FILE"
-  echo "OK: Imported schema"
+  TABLE_COUNT="$(mysql -u "${DB_APP_USER}" -p"${DB_PASS}" -N -e \
+    "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='school_bus_tracking'" 2>/dev/null || echo 0)"
+  if [[ "${TABLE_COUNT:-0}" -lt 5 ]]; then
+    mysql -u "${DB_APP_USER}" -p"${DB_PASS}" school_bus_tracking < "$SQL_FILE"
+    echo "OK: Imported schema"
+  else
+    echo "OK: Schema already present (${TABLE_COUNT} tables) — skipping import"
+  fi
 fi
+
+DB_USER="${DB_APP_USER}" DB_PASS="${DB_PASS}" bash "$ROOT/scripts/apply-busqr-migrations.sh"
+echo "OK: Migrations applied"
 
 # --- Admin password: match Operations login (admin / admin123) ---
 DB_USER="${DB_APP_USER}" DB_PASS="${DB_PASS}" php -r "
@@ -87,7 +108,11 @@ Operations .env should use:
   NEHEMIAH_DB_USER=${DB_APP_USER}
   NEHEMIAH_DB_PASSWORD=${DB_PASS}
   NEHEMIAH_DB_ENABLED=true
+  NEHEMIAH_APP_URL=http://localhost/school-bus-tracking
 
-Then restart: npm run start:server
+legacy/qrcode/.env:
+  SITE_URL=http://localhost/school-bus-tracking/
+
+Then start everything: bash scripts/start-all.sh
 
 EOF

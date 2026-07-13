@@ -141,6 +141,7 @@ if ($is_logged_in) {
 
 <?php else: ?>
     <!-- DASHBOARD (Logged In) -->
+    <?php require_once 'includes/ops_link.php'; render_ops_return_bar(); ?>
     
     <!-- Sidebar -->
     <div class="sidebar fixed left-0 top-0 h-full w-64 text-white z-20">

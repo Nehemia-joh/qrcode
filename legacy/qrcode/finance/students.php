@@ -20,6 +20,7 @@ $students = $db->query("SELECT id, student_id, full_name, parent_phone, bus_numb
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-gray-100">
+    <?php require_once __DIR__ . '/../includes/ops_link.php'; render_ops_return_bar(); ?>
     <div class="ml-64 min-h-screen">
         <div class="bg-white shadow-sm px-8 py-4">
             <h1 class="text-2xl font-semibold text-gray-800">All Students</h1>

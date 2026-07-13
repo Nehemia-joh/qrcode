@@ -84,6 +84,7 @@ $students = $db->query("SELECT id, student_id, full_name FROM students WHERE sta
     </style>
 </head>
 <body class="bg-gray-100">
+    <?php require_once __DIR__ . '/../includes/ops_link.php'; render_ops_return_bar(); ?>
     <!-- Sidebar -->
     <div class="sidebar fixed left-0 top-0 h-full w-64 text-white z-20">
         <div class="p-6">

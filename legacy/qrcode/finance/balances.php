@@ -143,6 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_payment'])) {
     </style>
 </head>
 <body class="bg-gray-100">
+    <?php require_once __DIR__ . '/../includes/ops_link.php'; render_ops_return_bar(); ?>
     <!-- Sidebar -->
     <div class="sidebar fixed left-0 top-0 h-full w-64 text-white z-20">
         <div class="p-6">

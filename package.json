@@ -14,8 +14,14 @@
     "dev:web": "npm run dev -w apps/web",
     "build": "npm run build --workspaces --if-present",
     "start:server": "npm run build -w apps/web && concurrently -n api,web -c blue,green \"npm run start -w apps/api\" \"npm run preview -w apps/web\"",
+    "start:fast": "concurrently -n api,web -c blue,green \"npm run start -w apps/api\" \"npm run preview -w apps/web\"",
     "test:webhook": "bash scripts/test-webhook.sh",
     "backup:data": "bash scripts/backup-data.sh",
+    "backup:all": "bash scripts/backup-all.sh",
+    "migrate:busqr": "bash scripts/apply-busqr-migrations.sh",
+    "sync:env": "bash scripts/sync-env.sh",
+    "start:all": "bash scripts/start-all.sh",
+    "stop:all": "bash scripts/stop-all.sh",
     "templates:modules": "python3 scripts/create_module_workbook.py"
   },
   "devDependencies": {
