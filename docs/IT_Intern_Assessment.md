@@ -4,6 +4,8 @@ Deadline: submit within 2 days of getting this message.
 
 Project link: https://github.com/Nehemia-joh/qrcode
 
+You will start the project, log in, then build a small Python report script for Operations.
+
 ---
 
 ## 1. Get the project
@@ -62,17 +64,59 @@ Take a screenshot of each page after login.
 
 ---
 
-## 4. Your real task (we will check this on GitHub)
+## 4. Build this (Python)
 
-Create a new file in the project:
+Create this file:
+
+scripts/ops_intern_report.py
+
+What the script must do:
+
+1. Check if the Operations API is running at:
+
+http://localhost:4000/api/health
+
+Print API status: UP or DOWN
+
+2. Read this sample data file:
+
+data/sample_students.json
+
+3. From that data, calculate and print:
+
+- total students
+- how many have balance less than 0 (in credit / overdue)
+- the names of those in-credit students
+- total balance of all students
+
+4. Save the same report into:
+
+docs/intern-submissions/YOUR-NAME-report.txt
+
+Example file name: docs/intern-submissions/Asha-Juma-report.txt
+
+Rules:
+
+- Use Python 3
+- You may use only the standard library (urllib, json, pathlib) or install requests if you prefer
+- Do not hardcode the student list inside the script. Read it from the JSON file.
+- Put your full name on the first line of the report file
+
+Run it like this:
+
+python3 scripts/ops_intern_report.py
+
+Take a screenshot of the terminal output.
+
+---
+
+## 5. Add your notes file
+
+Also create:
 
 docs/intern-submissions/YOUR-NAME.md
 
-Example: if your name is Asha Juma, the file is:
-
-docs/intern-submissions/Asha-Juma.md
-
-Put this inside the file:
+Put this inside:
 
 Intern name: YOUR FULL NAME
 
@@ -80,21 +124,21 @@ GitHub username: YOUR GITHUB USERNAME
 
 Date completed: YYYY-MM-DD
 
-Operations URL I opened: http://localhost:8080/login
+One thing I noticed in Operations: one short sentence
 
-Bus QR URL I opened: write the URL that worked for you
+One improvement idea: one short sentence
 
-One thing I noticed in Operations: write one short sentence
+---
 
-One improvement idea: write one short sentence
+## 6. Submit on GitHub
 
-Then save the file and run:
+Run:
 
 mkdir -p docs/intern-submissions
 
-git add docs/intern-submissions/
+git add scripts/ops_intern_report.py docs/intern-submissions/
 
-git commit -m "Add intern assessment submission"
+git commit -m "Add intern ops report script and submission"
 
 git push origin main
 
@@ -110,14 +154,15 @@ We will review your pull request on our side.
 
 ---
 
-## 5. Send by email
+## 7. Send by email
 
 Send:
 
 1. Screenshot of Operations after login
 2. Screenshot of Bus QR after login
-3. The link to your Pull Request
-4. A few lines on what worked and what did not
+3. Screenshot of your Python script running in the terminal
+4. The link to your Pull Request
+5. A few lines on what worked and what did not
 
 ---
 

@@ -1,0 +1,32 @@
+[
+  {
+    "student_id": "STU001",
+    "full_name": "Amina Hassan",
+    "bus_number": "Bus 3",
+    "balance": 15000
+  },
+  {
+    "student_id": "STU002",
+    "full_name": "John Mwangi",
+    "bus_number": "Bus 1",
+    "balance": -5000
+  },
+  {
+    "student_id": "STU003",
+    "full_name": "Grace Njeri",
+    "bus_number": "Bus 2",
+    "balance": 0
+  },
+  {
+    "student_id": "STU004",
+    "full_name": "Peter Otieno",
+    "bus_number": "Bus 1",
+    "balance": -12000
+  },
+  {
+    "student_id": "STU005",
+    "full_name": "Fatuma Ali",
+    "bus_number": "Bus 3",
+    "balance": 8000
+  }
+]
