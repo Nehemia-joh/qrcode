@@ -1,0 +1,7 @@
+Irene Musau
+
+    Total students: 5
+    Students in credit (overdue): 2
+    Names of in-credit students: ['John Mwangi', 'Peter Otieno']
+    Total balance: 6000
+    
