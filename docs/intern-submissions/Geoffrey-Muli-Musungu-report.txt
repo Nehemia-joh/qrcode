@@ -1,0 +1,10 @@
+Geoffrey Muli Musungu
+Operations Intern Report
+========================================
+API status: UP
+Total students: 5
+Students in credit / overdue (balance < 0): 2
+In-credit student names:
+  - John Mwangi (balance: -5000)
+  - Peter Otieno (balance: -12000)
+Total balance of all students: 6000
